@@ -79,7 +79,7 @@ with open(filename) as vcf:
 				seq[i] = [broken[i], ""]
 				longest_name = max(longest_name, len(broken[i]))
 
-		# Now process teh SNPs one by one
+		# Now process the SNPs one by one
 		elif line[0] != "#":
 
 			# Print progress every 10,000 lines
@@ -96,8 +96,8 @@ with open(filename) as vcf:
 				for n in range(0, len(broken[4].split(","))):
 					nuc[str(n+1)] = broken[4].split(",")[n]
 
-				# Translate genotype into nucleotides and the obtain the consensus
-				# nucleotide for heterozygous SNPs and append to DNA sequence for each sample
+				# Translate genotype into nucleotides and the obtain the IUPAC ambiguity
+				# for heterozygous SNPs, and append to DNA sequence of each sample
 				for i in range(9, len(broken)):
 					gt = broken[i].split(":")[0].replace("|","/")
 					seq[i][1] += amb[(nuc[gt.split("/")[0]], nuc[gt.split("/")[1]])]
@@ -123,7 +123,7 @@ for sample in seq.keys():
 	# Write sequence to file
 	output.write(seq[sample][0]+padding+seq[sample][1]+"\n")
 	
-	# Print process of writing to screen
+	# Print progress of writing the PHYLIP file
 	sample_num += 1
 	print "Sample "+str(sample_num)+" of "+str(len(seq))+" written to phylip file"
 output.close()
