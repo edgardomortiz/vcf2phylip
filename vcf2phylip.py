@@ -4,7 +4,10 @@
 
 
 '''
-The script converts a collection of SNPs in VCF format into a PHYLIP file for phylogenetic analysis
+The script converts a collection of SNPs in VCF format into a PHYLIP file for
+phylogenetic analysis. The code is optmizied to process VCF files with sizes 
+>1GB. For small VCF files the algorithm slows down as the number of taxa increases
+(but is still fast).
 '''
 
 
@@ -19,8 +22,11 @@ __date__        = "2017-10-10"
 
 import sys
 
-filename = sys.argv[1]                    # First argument is the name of the VCF file
-try: min_sample_locus = int(sys.argv[2])  # Second argument is minimum of samples per SNP, default is 4 for phylogenetics
+# First argument is the name of the VCF file
+filename = sys.argv[1]
+
+# Second argument is minimum of samples per SNP, default is 4 for phylogenetics
+try: min_sample_locus = int(sys.argv[2])
 except (ValueError, IndexError): min_sample_locus = 4
 
 # Output filename will be the same as input file, indicating the minimum of samples specified
@@ -54,51 +60,63 @@ amb = {("A","A"):"A",
 	   ("T","N"):"T",
 	   ("T","T"):"T"}
 
+
+
 # Process header of VCF file
 with open(filename) as vcf:
 
-	# Dictionary that holds as keys the column index of the sample and as value a list
-	# of two elements, element [0] is the name of the sample, element[1] is the DNA sequence
-	seq = {}
+	# List to store sample names
+	sample_names = []
 
 	# Keep track of longest sequence name for padding with spaces in the output file
-	longest_name = 0
+	len_longest_name = 0
 
-	# Start parsing lines in VCF
+	# Look for the line in the VCF header with the sample names
 	for line in vcf:
+		if line.startswith("#CHROM"):
 
-		# Split line into fields, 
-		broken = line.strip("\n").split("\t")
+			# Split line into fields
+			broken = line.strip("\n").split("\t")
 
-		# Get sample names to create empty dictionary from the header of the file
-		if broken[0] == "#CHROM":
+			# Create a list of sample names and the length of the longest name
 			for i in range(9, len(broken)):
-				seq[i] = [broken[i], ""]
-				longest_name = max(longest_name, len(broken[i]))
+				sample_names.append(broken[i])
+				len_longest_name = max(len_longest_name, len(broken[i]))
 			break
 vcf.close()
 
-# Process SNPs of VCF file
+
+
+# We need to create an intermediate file to hold the sequence data vertically
+# and then transpose it to create the PHYLIP file
+temporal = open(outfile+".tmp", "w")
+
+# Store the index of the last column of VCF file
+index_last_sample = len(sample_names)+9
+
+# Start processing SNPs of VCF file
 with open(filename) as vcf:
 
 	# Initialize line counter
-	num_lines = 0
-
+	snp_num = 0
 	while True:
-		vcf_chunk = vcf.readlines(200000)
+
+		# Load large chunks of file into memory
+		vcf_chunk = vcf.readlines(100000)
 		if not vcf_chunk:
 			break
-		for line in vcf_chunk:
-			# Now process the SNPs one by one
-			if line[0] != "#":
 
-				# Split line into fields, 
+		# Now process the SNPs one by one
+		for line in vcf_chunk:
+			if not line.startswith("#"):
+
+				# Split line into columns
 				broken = line.strip("\n").split("\t")
 
-				# Print progress every 10,000 lines
-				num_lines += 1
-				if num_lines % 10000 == 0:
-					print str(num_lines)+" SNPs processed"
+				# Print progress every 100,000 lines
+				snp_num += 1
+				if snp_num % 100000 == 0:
+					print str(snp_num)+" SNPs processed"
 
 				# If SNP meets minimum of samples requirement
 				if int(broken[7].split(";")[0].replace("NS=","")) >= min_sample_locus:
@@ -109,37 +127,41 @@ with open(filename) as vcf:
 					for n in range(len(broken[4].split(","))):
 						nuc[str(n+1)] = broken[4].split(",")[n]
 
-					# Translate genotype into nucleotides and the obtain the IUPAC ambiguity
+					# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 					# for heterozygous SNPs, and append to DNA sequence of each sample
-					for i in range(9, len(broken)):
-						seq[i][1] += amb[(nuc[broken[i][0]], nuc[broken[i][2]])]
+					site_tmp = [(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)]
+
+					# Write entire row of single nucleotide genotypes to temporary file
+					temporal.write("\t".join(site_tmp)+"\n")
 vcf.close()
+temporal.close()
+
 
 
 # Write PHYLIP file
 output = open(outfile, "w")
 
 # PHYLIP header is number of samples and number of sites in alignment
-phylip = str(len(seq))+" "+str(len(seq[9][1]))+"\n"
-output.write(phylip)
+header = str(len(sample_names))+" "+str(snp_num)+"\n"
+output.write(header)
+for s in range(0, len(sample_names)):
+	with open(outfile+".tmp") as tmp_seq:
+		seqout = ""
+		for line in tmp_seq:
+			seqout += line.strip("\n").split("\t")[s]
 
-# Initialize sample counter
-sample_num = 0
+		# Add padding with spaces after sequence name so every nucleotide starts
+		# at the same position (only aestethic)
+		padding = (len_longest_name + 3 - len(sample_names[s])) * " "
 
-# Loop the dictionary to obtain the DNA sequence while writing to output file
-for sample in seq.keys():
+		# Write sample name and its corresponding sequence
+		output.write(sample_names[s]+padding+seqout+"\n")
 
-	# Add padding with spaces after sequence name so every nucleotide starts
-	# at the same position (only aestethic)
-	padding = (longest_name + 3 - len(seq[sample][0])) * " "
-	
-	# Write sequence to file
-	output.write(seq[sample][0]+padding+seq[sample][1]+"\n")
-	
-	# Print progress of writing the PHYLIP file
-	sample_num += 1
-	print "Sample "+str(sample_num)+" of "+str(len(seq))+" written to phylip file"
+		# Print current progress
+		print "Sample "+str(s+1)+" of "+str(len(sample_names))+" added to PHYLIP file."
+
 output.close()
+
 print "Done!\n"
 
 # END
