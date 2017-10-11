@@ -21,6 +21,7 @@ __date__        = "2017-10-10"
 
 
 import sys
+import os
 
 # First argument is the name of the VCF file
 filename = sys.argv[1]
