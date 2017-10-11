@@ -54,11 +54,8 @@ amb = {("A","A"):"A",
 	   ("T","N"):"T",
 	   ("T","T"):"T"}
 
-# Start processing of VCF file
+# Process header of VCF file
 with open(filename) as vcf:
-
-	# Initialize line counter
-	num_lines = 0
 
 	# Dictionary that holds as keys the column index of the sample and as value a list
 	# of two elements, element [0] is the name of the sample, element[1] is the DNA sequence
@@ -78,30 +75,46 @@ with open(filename) as vcf:
 			for i in range(9, len(broken)):
 				seq[i] = [broken[i], ""]
 				longest_name = max(longest_name, len(broken[i]))
-
-		# Now process the SNPs one by one
-		elif line[0] != "#":
-
-			# Print progress every 10,000 lines
-			num_lines += 1
-			if num_lines % 10000 == 0:
-				print str(num_lines)+" SNPs processed"
-
-			# If SNP meets minimum of samples requirement
-			if int(broken[7].split(";")[0].replace("NS=","")) >= min_sample_locus:
-
-				# Create a dictionary for genotype to nucleotide translation
-				# each SNP may code the nucleotides in a different manner
-				nuc = {str(0):broken[3], ".":"N"}
-				for n in range(0, len(broken[4].split(","))):
-					nuc[str(n+1)] = broken[4].split(",")[n]
-
-				# Translate genotype into nucleotides and the obtain the IUPAC ambiguity
-				# for heterozygous SNPs, and append to DNA sequence of each sample
-				for i in range(9, len(broken)):
-					gt = broken[i].split(":")[0].replace("|","/")
-					seq[i][1] += amb[(nuc[gt.split("/")[0]], nuc[gt.split("/")[1]])]
+			break
 vcf.close()
+
+# Process SNPs of VCF file
+with open(filename) as vcf:
+
+	# Initialize line counter
+	num_lines = 0
+
+	while True:
+		vcf_chunk = vcf.readlines(200000)
+		if not vcf_chunk:
+			break
+		for line in vcf_chunk:
+			# Now process the SNPs one by one
+			if line[0] != "#":
+
+				# Split line into fields, 
+				broken = line.strip("\n").split("\t")
+
+				# Print progress every 10,000 lines
+				num_lines += 1
+				if num_lines % 10000 == 0:
+					print str(num_lines)+" SNPs processed"
+
+				# If SNP meets minimum of samples requirement
+				if int(broken[7].split(";")[0].replace("NS=","")) >= min_sample_locus:
+
+					# Create a dictionary for genotype to nucleotide translation
+					# each SNP may code the nucleotides in a different manner
+					nuc = {str(0):broken[3], ".":"N"}
+					for n in range(len(broken[4].split(","))):
+						nuc[str(n+1)] = broken[4].split(",")[n]
+
+					# Translate genotype into nucleotides and the obtain the IUPAC ambiguity
+					# for heterozygous SNPs, and append to DNA sequence of each sample
+					for i in range(9, len(broken)):
+						seq[i][1] += amb[(nuc[broken[i][0]], nuc[broken[i][2]])]
+vcf.close()
+
 
 # Write PHYLIP file
 output = open(outfile, "w")
