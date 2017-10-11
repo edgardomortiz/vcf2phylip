@@ -14,7 +14,7 @@ phylogenetic analysis. The code is optmizied to process VCF files with sizes
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "1.0"
+__version__     = "1.1"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2017-10-10"
 
@@ -161,6 +161,11 @@ for s in range(0, len(sample_names)):
 		print "Sample "+str(s+1)+" of "+str(len(sample_names))+" added to PHYLIP file."
 
 output.close()
+
+
+# Remove temporary file
+os.remove(outfile+".tmp")
+
 
 print "Done!\n"
 
