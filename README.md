@@ -26,5 +26,5 @@ python vcf2phylip.py myfile.vcf 63
 _Example 3:_ Using a custom minimum of samples per SNP of 35 and setting outgroup to "sample1":
 ```bash
 python vcf2phylip.py myfile.vcf 35 sample1
-# This command will create a PHYLIP called myfile_min64.phy
+# This command will create a PHYLIP called myfile_min35.phy with sample1 as the first sequence
 ```
