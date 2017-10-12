@@ -6,7 +6,7 @@ The script converts a collection of SNPs in VCF format into a PHYLIP file for ph
 
 A minimum number of samples per SNP can also be specified so you won't need to run again the software that created your VCF file just to increase this threshold. Lastly, if you specify an OUTGROUP the sequence of that sample will be written first in the alignment (phylogenetic software usually root the trees on the first taxon in the alignment).
 
-The script has been tested with VCF files produced by [pyrad v.3.0.66](https://github.com/dereneaton/pyrad), [ipyrad](http://ipyrad.readthedocs.io/), and [Stacks v.1.47](http://catchenlab.life.illinois.edu/stacks/).
+The script has been tested with VCF files produced by [pyrad v.3.0.66](https://github.com/dereneaton/pyrad), [ipyrad v.0.7.x](http://ipyrad.readthedocs.io/), and [Stacks v.1.47](http://catchenlab.life.illinois.edu/stacks/).
 
 ## _Usage_
 Simply specify the name of the VCF input file and optionally the minimum of samples per SNP (default 4 for phylogenetics):
