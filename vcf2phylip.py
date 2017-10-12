@@ -30,6 +30,10 @@ filename = sys.argv[1]
 try: min_sample_locus = int(sys.argv[2])
 except (ValueError, IndexError): min_sample_locus = 4
 
+# Third optional argument is name of outgroup sample
+try: outgroup = sys.argv[3]
+except (ValueError, IndexError): outgroup = ""
+
 # Output filename will be the same as input file, indicating the minimum of samples specified
 # e.g. VCF: sample.vcf, PHY: sample_min4.phy
 outfile = filename.split(".")[0]+"_min"+str(min_sample_locus)+"."+filename.split(".")[-1].replace("vcf","phy").replace("VCF","phy")
@@ -145,21 +149,45 @@ output = open(outfile, "w")
 # PHYLIP header is number of samples and number of sites in alignment
 header = str(len(sample_names))+" "+str(snp_num)+"\n"
 output.write(header)
-for s in range(0, len(sample_names)):
+
+# Index of outgroup in list of sample names
+idx_outgroup = "NA"
+
+# Write outgroup as first sequence in alignment if the name is specified
+if outgroup in sample_names:
+	idx_outgroup = sample_names.index(outgroup)
 	with open(outfile+".tmp") as tmp_seq:
 		seqout = ""
 		for line in tmp_seq:
-			seqout += line.strip("\n").split("\t")[s]
+			seqout += line.strip("\n").split("\t")[idx_outgroup]
 
 		# Add padding with spaces after sequence name so every nucleotide starts
 		# at the same position (only aestethic)
-		padding = (len_longest_name + 3 - len(sample_names[s])) * " "
+		padding = (len_longest_name + 3 - len(sample_names[idx_outgroup])) * " "
 
 		# Write sample name and its corresponding sequence
-		output.write(sample_names[s]+padding+seqout+"\n")
+		output.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
 		# Print current progress
-		print "Sample "+str(s+1)+" of "+str(len(sample_names))+" added to PHYLIP file."
+		print "Outgroup "+outgroup+" added to PHYLIP file."
+
+# Write sequences of the ingroup
+for s in range(0, len(sample_names)):
+	if s != idx_outgroup:
+		with open(outfile+".tmp") as tmp_seq:
+			seqout = ""
+			for line in tmp_seq:
+				seqout += line.strip("\n").split("\t")[s]
+
+			# Add padding with spaces after sequence name so every nucleotide starts
+			# at the same position (only aestethic)
+			padding = (len_longest_name + 3 - len(sample_names[s])) * " "
+
+			# Write sample name and its corresponding sequence
+			output.write(sample_names[s]+padding+seqout+"\n")
+
+			# Print current progress
+			print "Sample "+str(s+1)+" of "+str(len(sample_names))+" added to PHYLIP file."
 
 output.close()
 
