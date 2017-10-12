@@ -134,10 +134,10 @@ with open(filename) as vcf:
 
 					# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 					# for heterozygous SNPs, and append to DNA sequence of each sample
-					site_tmp = [(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)]
+					site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
 
 					# Write entire row of single nucleotide genotypes to temporary file
-					temporal.write("\t".join(site_tmp)+"\n")
+					temporal.write(site_tmp+"\n")
 vcf.close()
 temporal.close()
 
@@ -159,7 +159,7 @@ if outgroup in sample_names:
 	with open(outfile+".tmp") as tmp_seq:
 		seqout = ""
 		for line in tmp_seq:
-			seqout += line.strip("\n").split("\t")[idx_outgroup]
+			seqout += line[idx_outgroup]
 
 		# Add padding with spaces after sequence name so every nucleotide starts
 		# at the same position (only aestethic)
@@ -177,7 +177,7 @@ for s in range(0, len(sample_names)):
 		with open(outfile+".tmp") as tmp_seq:
 			seqout = ""
 			for line in tmp_seq:
-				seqout += line.strip("\n").split("\t")[s]
+				seqout += line[s]
 
 			# Add padding with spaces after sequence name so every nucleotide starts
 			# at the same position (only aestethic)
@@ -193,7 +193,7 @@ output.close()
 
 
 # Remove temporary file
-os.remove(outfile+".tmp")
+#os.remove(outfile+".tmp")
 
 
 print "Done!\n"
