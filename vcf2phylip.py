@@ -193,7 +193,7 @@ output.close()
 
 
 # Remove temporary file
-#os.remove(outfile+".tmp")
+os.remove(outfile+".tmp")
 
 
 print "Done!\n"
