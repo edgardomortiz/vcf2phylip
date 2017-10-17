@@ -28,3 +28,7 @@ _Example 3:_ Using a custom minimum of samples per SNP of 35 and setting outgrou
 python vcf2phylip.py myfile.vcf 35 sample1
 # This command will create a PHYLIP called myfile_min35.phy with sample1 as the first sequence
 ```
+
+## _Credits_
+Code: [Edgardo M. Ortiz](e.ortiz.v@gmail.com)
+Data and testing: [Juan D. Palacio-Mejía](jdpalacio@gmail.com)
