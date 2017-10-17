@@ -30,5 +30,5 @@ python vcf2phylip.py myfile.vcf 35 sample1
 ```
 
 ## _Credits_
-Code: [Edgardo M. Ortiz](e.ortiz.v@gmail.com)
-Data and testing: [Juan D. Palacio-Mejía](jdpalacio@gmail.com)
+-Code: [Edgardo M. Ortiz](mailto:e.ortiz.v@gmail.com)
+-Data and testing: [Juan D. Palacio-Mejía](mailto:jdpalacio@gmail.com)
