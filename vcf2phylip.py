@@ -25,7 +25,7 @@ import argparse
 
 
 def main():
-	parser = argparse.ArgumentParser(description="Coverts SNPs in VCF format into a PHYLIP matrix for phylogenetic analysis")
+	parser = argparse.ArgumentParser(description="Converts SNPs in VCF format into a PHYLIP matrix for phylogenetic analysis")
 	parser.add_argument("-i", "--input", action="store", dest="filename", required=True,
 		help="Name of the input VCF file")
 	parser.add_argument("-s", "--min-samples-locus", action="store", dest="min_samples_locus", type=int, default=4,
