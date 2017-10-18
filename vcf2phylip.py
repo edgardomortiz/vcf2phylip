@@ -31,7 +31,7 @@ def main():
 	parser.add_argument("-s", "--min-samples-locus", action="store", dest="min_samples_locus", type=int, default=4,
 		help="Minimum of samples required to be present at a locus, default=4 since is the minimum for phylogenetics")
 	parser.add_argument("-o", "--outgroup", action="store", dest="outgroup", default="",
-		help="Name of the outgroup in the matrix. Sequence will be written as first taxon in the alignment since most phylogenetic software roots the tree at the first taxon in alignment.")
+		help="Name of the outgroup in the matrix. Sequence will be written as first taxon in the alignment since most phylogenetic software roots the tree at the first taxon in alignment")
 	args = parser.parse_args()
 
 	filename = args.filename
