@@ -25,9 +25,7 @@ optional arguments:
                         default=4 since is the minimum for phylogenetics
   -o OUTGROUP, --outgroup OUTGROUP
                         Name of the outgroup in the matrix. Sequence will be
-                        written as first taxon in the alignment since most
-                        phylogenetic software roots the tree at the first
-                        taxon in alignment
+                        written as first taxon in the alignment
 ```
 
 ## _Examples_
