@@ -27,7 +27,7 @@ optional arguments:
                         Name of the outgroup in the matrix. Sequence will be
                         written as first taxon in the alignment since most
                         phylogenetic software roots the tree at the first
-                        taxon in alignment.
+                        taxon in alignment
 ```
 
 ## _Examples_
