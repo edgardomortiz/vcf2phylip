@@ -14,7 +14,7 @@ Just type `python vcf2phylip.py -h` to show the help of the program:
 ```
 usage: vcf2phylip.py [-h] -i FILENAME [-s MIN_SAMPLES_LOCUS] [-o OUTGROUP]
 
-Coverts SNPs in VCF format into a PHYLIP matrix for phylogenetic analysis
+Converts SNPs in VCF format into a PHYLIP matrix for phylogenetic analysis
 
 optional arguments:
   -h, --help            show this help message and exit
