@@ -118,7 +118,7 @@ def main():
 
 			# Now process the SNPs one by one
 			for line in vcf_chunk:
-				if not line.startswith("#") or line.strip("\n") != "":
+				if not line.startswith("#") and line.strip("\n") != "": # pyrad sometimes produces an empty line after the #CHROM line
 
 					# Split line into columns
 					broken = line.strip("\n").split("\t")
