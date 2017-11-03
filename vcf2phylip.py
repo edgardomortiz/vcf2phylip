@@ -118,7 +118,7 @@ def main():
 
 			# Now process the SNPs one by one
 			for line in vcf_chunk:
-				if not line.startswith("#"):
+				if not line.startswith("#") or not line.startswith(" "):
 
 					# Split line into columns
 					broken = line.strip("\n").split("\t")
