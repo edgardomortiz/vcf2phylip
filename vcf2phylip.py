@@ -40,7 +40,7 @@ def main():
 
 	# Output filename will be the same as input file, indicating the minimum of samples specified
 	# e.g. VCF: sample.vcf, PHY: sample_min4.phy
-	outfile = filename+".min"+str(min_samples_locus)+".vcf"
+	outfile = filename+".min"+str(min_samples_locus)+".phy"
 
 	# Dictionary of IUPAC ambiguities for nucleotides
 	amb = {("A","A"):"A",
