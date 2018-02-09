@@ -14,7 +14,7 @@ phylogenetic analysis. The code is optmizied to process VCF files with sizes
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "1.2"
+__version__     = "1.3"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2017-10-10"
 
@@ -129,23 +129,44 @@ def main():
 						print str(snp_num)+" SNPs processed"
 
 					# If SNP meets minimum of samples requirement
-					if int(broken[7].split(";")[0].replace("NS=","")) >= min_samples_locus:
+					if "NS=" in broken[7]: # for stacks, pyrad, ipyrad NS means Number of Samples in locus
+						if int(broken[7].split(";")[0].replace("NS=","")) >= min_samples_locus:
 
-						# Add to running sum of filtered SNPs
-						snp_filtered += 1
+							# Add to running sum of filtered SNPs
+							snp_filtered += 1
 
-						# Create a dictionary for genotype to nucleotide translation
-						# each SNP may code the nucleotides in a different manner
-						nuc = {str(0):broken[3], ".":"N"}
-						for n in range(len(broken[4].split(","))):
-							nuc[str(n+1)] = broken[4].split(",")[n]
+							# Create a dictionary for genotype to nucleotide translation
+							# each SNP may code the nucleotides in a different manner
+							nuc = {str(0):broken[3], ".":"N"}
+							for n in range(len(broken[4].split(","))):
+								nuc[str(n+1)] = broken[4].split(",")[n]
 
-						# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
-						# for heterozygous SNPs, and append to DNA sequence of each sample
-						site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
+							# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
+							# for heterozygous SNPs, and append to DNA sequence of each sample
+							site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
 
-						# Write entire row of single nucleotide genotypes to temporary file
-						temporal.write(site_tmp+"\n")
+							# Write entire row of single nucleotide genotypes to temporary file
+							temporal.write(site_tmp+"\n")
+
+					# Optimize by reducing repetition of code when possible, otherwise seems to work fine
+					elif "WT=" in broken[7] and "HET=" in broken[7] and "HOM=" in broken[7] and "NC=" in broken[7]: # Regina's format from samtools
+						if len(sample_names) - int(broken[7].split(";")[4].replace("NC=","")) >= min_samples_locus:
+
+							# Add to running sum of filtered SNPs
+							snp_filtered += 1
+
+							# Create a dictionary for genotype to nucleotide translation
+							# each SNP may code the nucleotides in a different manner
+							nuc = {str(0):broken[3], ".":"N"}
+							for n in range(len(broken[4].split(","))):
+								nuc[str(n+1)] = broken[4].split(",")[n]
+
+							# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
+							# for heterozygous SNPs, and append to DNA sequence of each sample
+							site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
+
+							# Write entire row of single nucleotide genotypes to temporary file
+							temporal.write(site_tmp+"\n")
 	vcf.close()
 	temporal.close()
 
