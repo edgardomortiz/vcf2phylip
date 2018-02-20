@@ -146,7 +146,7 @@ def main():
 						# If SNP meets minimum of samples requirement
 						if "NS=" in broken[7]: # for stacks, pyrad, ipyrad NS means Number of Samples in locus
 							
-							if int(broken[7].split(";")[0].replace("NS=","")) >= min_samples_locus:
+							if int(broken[7].split("NS=")[1].split(";")[0]) >= min_samples_locus:
 
 								# Add to running sum of filtered SNPs
 								snp_filtered += 1
@@ -190,7 +190,7 @@ def main():
 						# If SNP meets minimum of samples requirement
 						if "NS=" in broken[7]: # for stacks, pyrad, ipyrad NS means Number of Samples in locus
 							# If SNP meets the minimum samples requirement AND is biallelic
-							if int(broken[7].split(";")[0].replace("NS=","")) >= min_samples_locus and len(broken[4]) == 1:
+							if int(broken[7].split("NS=")[1].split(";")[0]) >= min_samples_locus and len(broken[4]) == 1:
 
 								# Add to running sum of filtered SNPs
 								snp_filtered += 1

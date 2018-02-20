@@ -130,7 +130,7 @@ def main():
 
 					# If SNP meets minimum of samples requirement
 					if "NS=" in broken[7]: # for stacks, pyrad, ipyrad NS means Number of Samples in locus
-						if int(broken[7].split(";")[0].replace("NS=","")) >= min_samples_locus:
+						if int(broken[7].split("NS=")[1].split(";")[0]) >= min_samples_locus:
 
 							# Add to running sum of filtered SNPs
 							snp_filtered += 1
