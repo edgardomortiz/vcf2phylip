@@ -1,5 +1,5 @@
 # vcf2phylip
-Convert SNPs in VCF format to PHYLIP for phylogenetic analysis
+Convert SNPs in VCF format to PHYLIP, NEXUS, binary NEXUS, or FASTA alignments for phylogenetic analysis
 
 ## _Brief description_
 This script takes as input a VCF file and will use the SNP genotypes to create a matrix for phylogenetic analysis in the PHYLIP, FASTA, NEXUS, or binary NEXUS formats. For heterozygous SNPs the consensus is made and the IUPAC nucleotide ambiguity codes are written to the final matrix(ces). The code is optimized for large VCF matrices (hundreds of samples and millions of genotypes), for example, in our tests it processed a 20GB VCF (~3 million SNPs x 650 individuals) in ~27 minutes. The initial version of the script just produced a PHYLIP matrix but now we have added other popular formats, including the binary NEXUS file to run SNPs analysis with the SNAPP plugin in BEAST.
