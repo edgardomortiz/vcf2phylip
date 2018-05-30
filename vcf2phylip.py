@@ -178,6 +178,9 @@ def main():
 
 					# Split line into columns
 					broken = line.strip("\n").split("\t")
+					for g in range(9,len(broken)):
+						if broken[g] in [".", ".|."]:
+							broken[g] = "./."
 
 					# Keep track of number of genotypes processed
 					snp_num += 1
