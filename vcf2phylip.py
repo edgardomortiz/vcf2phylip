@@ -13,7 +13,7 @@ down as the number of taxa increases (but is still fast).
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "1.4"
+__version__     = "1.5"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2018-04-24"
 
