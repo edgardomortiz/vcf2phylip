@@ -76,4 +76,4 @@ python vcf2phylip.py -i myfile.vcf -p -n
 
 ## _Citation_
 
-** Ortiz, E.M. 2018.** vcf2phylip v1.5: convert a VCF matrix into several matrix formats for phylogenetic analysis. [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1257058.svg)](https://doi.org/10.5281/zenodo.1257058)
+**Ortiz, E.M. 2018.** vcf2phylip v1.5: convert a VCF matrix into several matrix formats for phylogenetic analysis. [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1257058.svg)](https://doi.org/10.5281/zenodo.1257058)
