@@ -49,7 +49,7 @@ def main():
 	fasta = args.fasta
 	nexus = args.nexus
 	nexusbin = args.nexusbin
-
+	ploidy = 2
 
 	# Dictionary of IUPAC ambiguities for nucleotides
 	# '*' means deletion for GATK (and other software?)
@@ -131,11 +131,18 @@ def main():
 
 				# Create a list of sample names and the keep track of the longest name length
 				for i in range(9, len(broken)):
-					name_sample = broken[i].replace("./","") # GATK adds "./" to sample names
+					name_sample = broken[i].replace("./","") # GATK adds "./" to sample names sometimes
 					sample_names.append(name_sample)
 					len_longest_name = max(len_longest_name, len(name_sample))
-				break
 
+			# Find out the ploidy of the genotypes
+			elif not line.startswith("#"):
+				broken = line.strip("\n").split("\t")
+				for j in range(9, len(broken[9:])):
+					if broken[j] not in [".",".|.","./."]:
+						ploidy = len(broken[j].split(":")[0])
+						print broken[j]
+					break
 	vcf.close()
 
 
@@ -209,7 +216,10 @@ def main():
 
 								# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 								# for heterozygous SNPs, and append to DNA sequence of each sample
-								site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
+								if ploidy > 1:
+									site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
+								else:
+									site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][0]])]) for i in range(9, index_last_sample)])
 
 								# Write entire row of single nucleotide genotypes to temporary file
 								temporal.write(site_tmp+"\n")
