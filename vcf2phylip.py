@@ -141,7 +141,7 @@ def main():
 				for j in range(9, len(broken[9:])):
 					if broken[j] not in [".",".|.","./."]:
 						ploidy = len(broken[j].split(":")[0])
-						print broken[j]
+						#print broken[j]
 					break
 	vcf.close()
 
