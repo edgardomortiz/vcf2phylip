@@ -7,7 +7,7 @@ This script takes as input a VCF file and will use the SNP genotypes to create a
 
 Additionally, you can choose a minimum number of samples per SNP to control the final amount of missing data. Since phylogenetic software usually root the trees at the first sequence in the alignment (e.g. RAxML, IQTREE, and MrBayes), the script also allows you to specify an OUTGROUP sequence that will be written in the first place in the alignment.
 
-The script has been tested with VCF files produced by [*pyrad v.3.0.66*](https://github.com/dereneaton/pyrad), [*ipyrad v.0.7.x*](http://ipyrad.readthedocs.io/), [*Stacks v.1.47*](http://catchenlab.life.illinois.edu/stacks/), [*dDocent*](http://ddocent.com/), and [*GATK*](https://software.broadinstitute.org/gatk/).
+The script has been tested with VCF files produced by [*pyrad v.3.0.66*](https://github.com/dereneaton/pyrad), [*ipyrad v.0.7.x*](http://ipyrad.readthedocs.io/), [*Stacks v.1.47*](http://catchenlab.life.illinois.edu/stacks/), [*dDocent*](http://ddocent.com/), [*GATK*](https://software.broadinstitute.org/gatk/), and [*freebayes*](https://github.com/ekg/freebayes).
 
 Please don't hesitate to open an "Issue" if you find any problem.
 
