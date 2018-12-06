@@ -135,13 +135,13 @@ def main():
 					sample_names.append(name_sample)
 					len_longest_name = max(len_longest_name, len(name_sample))
 
-			# Find out the ploidy of the genotypes
+			# Find out the ploidy of the genotypes, just distinguishes if sample is not haploid vs n-ploid
 			elif not line.startswith("#"):
 				broken = line.strip("\n").split("\t")
 				for j in range(9, len(broken[9:])):
-					if broken[j] not in [".",".|.","./."]:
+					if broken[j].split(":")[0] not in [".",".|.","./."]:
 						ploidy = len(broken[j].split(":")[0])
-						#print broken[j]
+						# print broken[j]
 					break
 	vcf.close()
 
@@ -186,7 +186,7 @@ def main():
 					# Split line into columns
 					broken = line.strip("\n").split("\t")
 					for g in range(9,len(broken)):
-						if broken[g] in [".", ".|."]:
+						if broken[g].split(":")[0] in [".", ".|."]:
 							broken[g] = "./."
 
 					# Keep track of number of genotypes processed
