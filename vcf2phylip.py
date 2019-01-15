@@ -13,6 +13,7 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 '''
 
 
+
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
 __version__     = "2.0"
@@ -20,10 +21,12 @@ __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2019-01-15"
 
 
+
 import sys
 import os
 import argparse
 import gzip
+
 
 
 def main():
