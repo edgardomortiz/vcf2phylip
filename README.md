@@ -77,5 +77,5 @@ python vcf2phylip.py -i myfile.vcf -p -n
 - Data and testing: [Juan D. Palacio-Mejía](mailto:jdpalacio@gmail.com)
 
 ## _Citation_
-**Ortiz, E.M. 2019.** vcf2phylip v1.6: convert a VCF matrix into several matrix formats for phylogenetic analysis. Check most current DOI in https://github.com/edgardomortiz/vcf2phylip
+**Ortiz, E.M. 2019.** vcf2phylip v2.0: convert a VCF matrix into several matrix formats for phylogenetic analysis. Check most current DOI in https://github.com/edgardomortiz/vcf2phylip
 
