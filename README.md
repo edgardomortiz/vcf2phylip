@@ -1,15 +1,16 @@
 # vcf2phylip
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1257058.svg)](https://doi.org/10.5281/zenodo.1257058)  
 Convert SNPs in VCF format to PHYLIP, NEXUS, binary NEXUS, or FASTA alignments for phylogenetic analysis
 
 ## _Brief description_
-This script takes as input a VCF file and will use the SNP genotypes to create a matrix for phylogenetic analysis in the PHYLIP (relaxed version), FASTA, NEXUS, or binary NEXUS formats. For heterozygous SNPs the consensus is made and the IUPAC nucleotide ambiguity codes are written to the final matrix(ces). The code is optimized for large VCF matrices (hundreds of samples and millions of genotypes), for example, in our tests it processed a 20GB VCF (~3 million SNPs x 650 individuals) in ~27 minutes. The initial version of the script just produced a PHYLIP matrix but now we have added other popular formats, including the binary NEXUS file to run SNPs analysis with the SNAPP plugin in BEAST.
+This script takes as input a VCF file and will use the SNP genotypes to create a matrix for phylogenetic analysis in the PHYLIP (relaxed version), FASTA, NEXUS, or binary NEXUS formats. For heterozygous SNPs the consensus is made and the IUPAC nucleotide ambiguity codes are written to the final matrix(ces), any ploidy level is allowed and automatically detected. The code is optimized for large VCF matrices (hundreds of samples and millions of genotypes), for example, in our tests it processed a 20GB VCF (~3 million SNPs x 650 individuals) in ~27 minutes. The initial version of the script just produced a PHYLIP matrix but now we have added other popular formats, including the binary NEXUS file to run SNPs analysis with the SNAPP plugin in BEAST (only for diploid samples).
 
 Additionally, you can choose a minimum number of samples per SNP to control the final amount of missing data. Since phylogenetic software usually root the trees at the first sequence in the alignment (e.g. RAxML, IQTREE, and MrBayes), the script also allows you to specify an OUTGROUP sequence that will be written in the first place in the alignment.
 
+Compressed VCF files can be directly analyzed but the extension must be `.vcf.gz`.
+
 The script has been tested with VCF files produced by [*pyrad v.3.0.66*](https://github.com/dereneaton/pyrad), [*ipyrad v.0.7.x*](http://ipyrad.readthedocs.io/), [*Stacks v.1.47*](http://catchenlab.life.illinois.edu/stacks/), [*dDocent*](http://ddocent.com/), [*GATK*](https://software.broadinstitute.org/gatk/), and [*freebayes*](https://github.com/ekg/freebayes).
 
-Please don't hesitate to open an "Issue" if you find any problem.
+Please don't hesitate to open an [`Issue`](https://github.com/edgardomortiz/vcf2phylip/issues) if you find any problem or suggestions for a new feature.
 
 ## _Usage_
 Just type `python vcf2phylip.py -h` to show the help of the program:
@@ -76,6 +77,5 @@ python vcf2phylip.py -i myfile.vcf -p -n
 - Data and testing: [Juan D. Palacio-Mejía](mailto:jdpalacio@gmail.com)
 
 ## _Citation_
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1257058.svg)](https://doi.org/10.5281/zenodo.1257058)  
-**Ortiz, E.M. 2018.** vcf2phylip v1.5: convert a VCF matrix into several matrix formats for phylogenetic analysis. DOI:10.5281/zenodo.1257058
+**Ortiz, E.M. 2019.** vcf2phylip v1.6: convert a VCF matrix into several matrix formats for phylogenetic analysis. Check most current DOI in https://github.com/edgardomortiz/vcf2phylip
 

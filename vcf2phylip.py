@@ -8,25 +8,28 @@ The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
 to process VCF files with sizes >1GB. For small VCF files the algorithm slows
 down as the number of taxa increases (but is still fast).
+
+Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 '''
 
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "1.5"
+__version__     = "2.0"
 __email__       = "e.ortiz.v@gmail.com"
-__date__        = "2018-04-24"
+__date__        = "2019-01-15"
 
 
 import sys
 import os
 import argparse
+import gzip
 
 
 def main():
 	parser = argparse.ArgumentParser(description="Converts SNPs in VCF format into an alignment for phylogenetic analysis")
 	parser.add_argument("-i", "--input", action="store", dest="filename", required=True,
-		help="Name of the input VCF file")
+		help="Name of the input VCF file, can be gzipped")
 	parser.add_argument("-m", "--min-samples-locus", action="store", dest="min_samples_locus", type=int, default=4,
 		help="Minimum of samples required to be present at a locus, default=4 since is the minimum for phylogenetics.")
 	parser.add_argument("-o", "--outgroup", action="store", dest="outgroup", default="",
@@ -42,57 +45,46 @@ def main():
 	args = parser.parse_args()
 
 
+
 	filename = args.filename
+
+    # Prepare the opener if the SAM file is compressed
+	if filename.endswith(".gz"):
+		opener = gzip.open
+	else:
+		opener = open
+
 	min_samples_locus = args.min_samples_locus
 	outgroup = args.outgroup
 	phylipdisable = args.phylipdisable
 	fasta = args.fasta
 	nexus = args.nexus
 	nexusbin = args.nexusbin
-	ploidy = 2
+
+
 
 	# Dictionary of IUPAC ambiguities for nucleotides
 	# '*' means deletion for GATK (and other software?)
 	# Deletions are ignored when making the consensus
-	amb = {("A","A"):"A",
-		   ("A","C"):"M",
-		   ("A","G"):"R",
-		   ("A","N"):"A",
-		   ("A","T"):"W",
-		   ("C","A"):"M",
-		   ("C","C"):"C",
-		   ("C","G"):"S",
-		   ("C","N"):"C",
-		   ("C","T"):"Y",
-		   ("G","A"):"R",
-		   ("G","C"):"S",
-		   ("G","G"):"G",
-		   ("G","N"):"G",
-		   ("G","T"):"K",
-		   ("N","A"):"A",
-		   ("N","C"):"C",
-		   ("N","G"):"G",
-		   ("N","N"):"N",
-		   ("N","T"):"T",
-		   ("T","A"):"W",
-		   ("T","C"):"Y",
-		   ("T","G"):"K",
-		   ("T","N"):"T",
-		   ("T","T"):"T",
-		   ("*","*"):"-",
-		   ("A","*"):"A",
-		   ("*","A"):"A",
-		   ("C","*"):"C",
-		   ("*","C"):"C",
-		   ("G","*"):"G",
-		   ("*","G"):"G",
-		   ("T","*"):"T",
-		   ("*","T"):"T",
-		   ("N","*"):"N",
-		   ("*","N"):"N"}
+	# Dictionary to translate IUPAC ambiguities, lowercase letters are used when "*" or "N" were present for a position,
+	# however, software like Genious for example are case insensitive and will imply ignore capitalization
+	amb = {"*":"-", "A":"A", "C":"C", "G":"G", "N":"N", "T":"T",
+		   "*A":"a", "*C":"c", "*G":"g", "*N":"n", "*T":"t",
+		   "AC":"M", "AG":"R", "AN":"a", "AT":"W", "CG":"S",
+		   "CN":"c", "CT":"Y", "GN":"g", "GT":"K", "NT":"t",
+		   "*AC":"m", "*AG":"r", "*AN":"a", "*AT":"w", "*CG":"s",
+		   "*CN":"c", "*CT":"y", "*GN":"g", "*GT":"k", "*NT":"t",
+		   "ACG":"V", "ACN":"m", "ACT":"H", "AGN":"r", "AGT":"D",
+		   "ANT":"w", "CGN":"s", "CGT":"B", "CNT":"y", "GNT":"k",
+		   "*ACG":"v", "*ACN":"m", "*ACT":"h", "*AGN":"r", "*AGT":"d",
+		   "*ANT":"w", "*CGN":"s", "*CGT":"b", "*CNT":"y", "*GNT":"k",
+		   "ACGN":"v", "ACGT":"N", "ACNT":"h", "AGNT":"d", "CGNT":"b",
+		   "*ACGN":"v", "*ACGT":"N", "*ACNT":"h", "*AGNT":"d", "*CGNT":"b",
+		   "*ACGNT":"N"}
 
 
-	# Dictionary for translating biallelic SNPs into SNAPP
+
+	# Dictionary for translating biallelic SNPs into SNAPP, only for diploid VCF
 	# 0 is homozygous reference
 	# 1 is heterozygous
 	# 2 is homozygous alternative
@@ -108,8 +100,14 @@ def main():
 			   "1|1":"2"}
 
 
+
+	############################
 	# Process header of VCF file
-	with open(filename) as vcf:
+	ploidy = 0
+	gt_idx = []
+	missing = ""
+
+	with opener(filename) as vcf:
 
 		# Create a list to store sample names
 		sample_names = []
@@ -136,18 +134,32 @@ def main():
 					len_longest_name = max(len_longest_name, len(name_sample))
 
 			# Find out the ploidy of the genotypes, just distinguishes if sample is not haploid vs n-ploid
-			elif not line.startswith("#"):
+			elif not line.startswith("#") and line.strip("\n") != "":
 				broken = line.strip("\n").split("\t")
 				for j in range(9, len(broken[9:])):
-					if broken[j].split(":")[0] not in [".",".|.","./."]:
-						ploidy = len(broken[j].split(":")[0])
-						# print broken[j]
-					break
+					if ploidy == 0:
+						if broken[j].split(":")[0][0] != ".":
+							ploidy = (len(broken[j].split(":")[0]) // 2) + 1
+							gt_idx = [i for i in range(0, len(broken[j].split(":")[0]), 2)]
+							missing = "/".join(["." for i in range(len(gt_idx))])
+							# print broken[j]
+							# print gt_idx
+							# print ploidy
+							break
+				
 	vcf.close()
 
+	print("\nConverting file " + filename + ":\n")
+	print("Number of samples in VCF: " + str(len(sample_names)))
 
+
+	####################
+	# SETUP OUTPUT FILES 
 	# Output filename will be the same as input file, indicating the minimum of samples specified
-	outfile = filename.replace(".vcf",".min"+str(min_samples_locus))
+	if filename.endswith(".gz"):
+		outfile = filename.replace(".vcf.gz",".min"+str(min_samples_locus))
+	else:
+		outfile = filename.replace(".vcf",".min"+str(min_samples_locus))
 
 	# We need to create an intermediate file to hold the sequence data 
 	# vertically and then transpose it to create the matrices
@@ -156,7 +168,12 @@ def main():
 	
 	# if binary NEXUS is selected also create a separate temporal
 	if nexusbin:
-		temporalbin = open(outfile+".bin.tmp", "w")
+		if ploidy == 2:
+			temporalbin = open(outfile+".bin.tmp", "w")
+		else:
+			print("Binary NEXUS not available for "+str(ploidy)+"-ploid VCF.")
+			nexusbin = False
+
 
 
 	##################
@@ -164,7 +181,7 @@ def main():
 	index_last_sample = len(sample_names)+9
 
 	# Start processing SNPs of VCF file
-	with open(filename) as vcf:
+	with opener(filename) as vcf:
 
 		# Initialize line counter
 		snp_num = 0
@@ -172,10 +189,10 @@ def main():
 		snp_shallow = 0
 		snp_multinuc = 0
 		snp_biallelic = 0
-		while True:
+		while 1:
 
 			# Load large chunks of file into memory
-			vcf_chunk = vcf.readlines(100000)
+			vcf_chunk = vcf.readlines(50000)
 			if not vcf_chunk:
 				break
 
@@ -186,18 +203,18 @@ def main():
 					# Split line into columns
 					broken = line.strip("\n").split("\t")
 					for g in range(9,len(broken)):
-						if broken[g].split(":")[0] in [".", ".|."]:
-							broken[g] = "./."
+						if broken[g].split(":")[0][0] == ".":
+							broken[g] = missing
 
 					# Keep track of number of genotypes processed
 					snp_num += 1
 
 					# Print progress every 500000 lines
 					if snp_num % 500000 == 0:
-						print str(snp_num)+" genotypes processed"
+						print(str(snp_num)+" genotypes processed.")
 
 					# Check if the SNP has the minimum of samples required
-					if (len(broken[9:]) - ''.join(broken[9:]).count("./.")) >= min_samples_locus:
+					if (len(broken[9:]) - ''.join(broken[9:]).count(missing)) >= min_samples_locus:
 						
 						# Check that ref genotype is a single nucleotide and alternative genotypes are single nucleotides
 						if len(broken[3]) == 1 and (len(broken[4])-broken[4].count(",")) == (broken[4].count(",")+1):
@@ -216,13 +233,14 @@ def main():
 
 								# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 								# for heterozygous SNPs, and append to DNA sequence of each sample
-								if ploidy > 1:
-									site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][2]])]) for i in range(9, index_last_sample)])
-								else:
-									site_tmp = ''.join([(amb[(nuc[broken[i][0]], nuc[broken[i][0]])]) for i in range(9, index_last_sample)])
+								site_tmp = ''.join([amb[''.join(sorted(set([nuc[broken[i][j]] for j in gt_idx])))] for i in range(9, index_last_sample)])
 
 								# Write entire row of single nucleotide genotypes to temporary file
 								temporal.write(site_tmp+"\n")
+
+								# print nuc
+								# print [i.split(":")[0] for i in broken[9:]]
+								# print site_tmp
 
 							# Write binary NEXUS for SNAPP if requested
 							if nexusbin:
@@ -250,20 +268,20 @@ def main():
 						snp_shallow += 1
 
 		# Print useful information about filtering of SNPs
-		print str(snp_num) + " genotypes processed in total"
-		print "\n"
-		print str(snp_shallow) + " genotypes were excluded because they exceeded the amount of missing data allowed"
-		print str(snp_multinuc) + " genotypes passed missing data filter but were excluded for not being SNPs"
-		print str(snp_accepted) + " SNPs passed the filters"
+		print("Total of genotypes processed: " + str(snp_num))
+		print("Genotypes excluded because they exceeded the amount of missing data allowed: " + str(snp_shallow))
+		print("Genotypes that passed missing data filter but were excluded for not being SNPs: " + str(snp_multinuc))
+		print("SNPs that passed the filters: " + str(snp_accepted)) 
 		if nexusbin:
-			print str(snp_biallelic) + " SNPs were biallelic and selected for binary NEXUS"
-		print "\n"
+			print("Biallelic SNPs selected for binary NEXUS: " + str(snp_biallelic))
+		print("")
 
 	vcf.close()
 	if fasta or nexus or not phylipdisable:
 		temporal.close()
 	if nexusbin:
 		temporalbin.close()
+
 
 
 	#######################
@@ -315,7 +333,7 @@ def main():
 					output_nex.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
 				# Print current progress
-				print "Outgroup, "+outgroup+", added to the matrix(ces)."
+				print("Outgroup, "+outgroup+", added to the matrix(ces).")
 
 		if nexusbin:
 			with open(outfile+".bin.tmp") as bin_tmp_seq:
@@ -330,7 +348,7 @@ def main():
 				output_nexbin.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
 				# Print current progress
-				print "Outgroup, "+outgroup+", added to the binary matrix."
+				print("Outgroup, "+outgroup+", added to the binary matrix.")
 
 
 	# Write sequences of the ingroup
@@ -356,7 +374,7 @@ def main():
 						output_nex.write(sample_names[s]+padding+seqout+"\n")
 
 					# Print current progress
-					print "Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the nucleotide matrix(ces)."
+					print("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the nucleotide matrix(ces).")
 
 			if nexusbin:
 				with open(outfile+".bin.tmp") as bin_tmp_seq:
@@ -371,7 +389,8 @@ def main():
 					output_nexbin.write(sample_names[s]+padding+seqout+"\n")
 
 					# Print current progress
-					print "Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the binary matrix."
+					print("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the binary matrix.")
+
 
 	if not phylipdisable:
 		output_phy.close()
@@ -390,7 +409,7 @@ def main():
 		os.remove(outfile+".bin.tmp")
 
 
-	print "\nDone!\n"
+	print( "\nDone!\n")
 
 
 if __name__ == "__main__":
