@@ -46,7 +46,8 @@ optional arguments:
 ```
 
 ## _Examples_
-In the following examples you can omit `python` if you change the permissions of `vcf2phylip.py` to executable.    
+In the following examples you can omit `python` if you change the permissions of `vcf2phylip.py` to executable.
+
 _Example 1:_ Use default parameters to create a PHYLIP matrix with a minimum of 4 samples per  SNP:
 ```bash
 python vcf2phylip.py --input myfile.vcf
