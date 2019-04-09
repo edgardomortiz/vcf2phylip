@@ -138,16 +138,20 @@ def main():
 
 			# Find out the ploidy of the genotypes, just distinguishes if sample is not haploid vs n-ploid
 			elif not line.startswith("#") and line.strip("\n") != "":
-				broken = line.strip("\n").split("\t")
-				for j in range(9, len(broken[9:])):
-					if ploidy == 0:
-						if broken[j].split(":")[0][0] != ".":
-							ploidy = (len(broken[j].split(":")[0]) // 2) + 1
-							gt_idx = [i for i in range(0, len(broken[j].split(":")[0]), 2)]
-							missing = "/".join(["." for i in range(len(gt_idx))])
-							# print broken[j]
-							# print gt_idx
-							# print ploidy
+				while ploidy == 0 and missing == "":
+					broken = line.strip("\n").split("\t")
+					for j in range(9, len(broken)):
+						if ploidy == 0:
+							if broken[j].split(":")[0][0] != ".":
+								ploidy = (len(broken[j].split(":")[0]) // 2) + 1
+								gt_idx = [i for i in range(0, len(broken[j].split(":")[0]), 2)]
+								missing = "/".join(["." for i in range(len(gt_idx))])
+								# print missing
+								# print broken[j]
+								# print gt_idx
+								# print ploidy
+								break
+						else:
 							break
 				
 	vcf.close()
