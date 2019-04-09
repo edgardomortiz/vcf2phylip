@@ -30,7 +30,7 @@ import gzip
 
 
 def main():
-	parser = argparse.ArgumentParser(description="Converts SNPs in VCF format into an alignment for phylogenetic analysis")
+	parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 	parser.add_argument("-i", "--input", action="store", dest="filename", required=True,
 		help="Name of the input VCF file, can be gzipped")
 	parser.add_argument("-m", "--min-samples-locus", action="store", dest="min_samples_locus", type=int, default=4,
@@ -151,8 +151,6 @@ def main():
 								# print gt_idx
 								# print ploidy
 								break
-						else:
-							break
 				
 	vcf.close()
 

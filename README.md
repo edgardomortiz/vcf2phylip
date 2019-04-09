@@ -20,12 +20,17 @@ Just type `python vcf2phylip.py -h` to show the help of the program:
 usage: vcf2phylip.py [-h] -i FILENAME [-m MIN_SAMPLES_LOCUS] [-o OUTGROUP]
                      [-p] [-f] [-n] [-b]
 
-Converts SNPs in VCF format into an alignment for phylogenetic analysis
+The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
+NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
+to process VCF files with sizes >1GB. For small VCF files the algorithm slows
+down as the number of taxa increases (but is still fast).
+
+Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 optional arguments:
   -h, --help            show this help message and exit
   -i FILENAME, --input FILENAME
-                        Name of the input VCF file
+                        Name of the input VCF file, can be gzipped
   -m MIN_SAMPLES_LOCUS, --min-samples-locus MIN_SAMPLES_LOCUS
                         Minimum of samples required to be present at a locus,
                         default=4 since is the minimum for phylogenetics.
