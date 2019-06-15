@@ -232,9 +232,9 @@ def main():
 
 								# Create a dictionary for genotype to nucleotide translation
 								# each SNP may code the nucleotides in a different manner
-								nuc = {str(0):broken[3], ".":"N"}
+								nuc = {str(0):broken[3].replace("-","*"), ".":"N"}
 								for n in range(len(broken[4].split(","))):
-									nuc[str(n+1)] = broken[4].split(",")[n]
+									nuc[str(n+1)] = broken[4].split(",")[n].replace("-","*")
 
 								# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 								# for heterozygous SNPs, and append to DNA sequence of each sample
