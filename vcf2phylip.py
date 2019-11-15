@@ -219,9 +219,10 @@ def main():
 						print(str(snp_num)+" genotypes processed.")
 
 					# Check if the SNP has the minimum of samples required
-					if (len(broken[9:]) - ''.join(broken[9:]).count(missing)) >= min_samples_locus:
+					if (len(broken[9:]) - broken[9:].count(missing)) >= min_samples_locus:
 						
 						# Check that ref genotype is a single nucleotide and alternative genotypes are single nucleotides
+						# print broken
 						if len(broken[3]) == 1 and (len(broken[4])-broken[4].count(",")) == (broken[4].count(",")+1):
 
 							# Add to running sum of accepted SNPs
