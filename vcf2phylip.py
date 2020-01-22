@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
@@ -146,10 +146,11 @@ def main():
 								ploidy = (len(broken[j].split(":")[0]) // 2) + 1
 								gt_idx = [i for i in range(0, len(broken[j].split(":")[0]), 2)]
 								missing = "/".join(["." for i in range(len(gt_idx))])
-								# print missing
-								# print broken[j]
-								# print gt_idx
-								# print ploidy
+								# Uncomment for debugging
+								# print(missing)
+								# print(broken[j])
+								# print(gt_idx)
+								# print(ploidy)
 								break
 				
 	vcf.close()
@@ -222,7 +223,7 @@ def main():
 					if (len(broken[9:]) - broken[9:].count(missing)) >= min_samples_locus:
 						
 						# Check that ref genotype is a single nucleotide and alternative genotypes are single nucleotides
-						# print broken
+						# print(broken)
 						if len(broken[3]) == 1 and (len(broken[4])-broken[4].count(",")) == (broken[4].count(",")+1):
 
 							# Add to running sum of accepted SNPs
@@ -237,16 +238,24 @@ def main():
 								for n in range(len(broken[4].split(","))):
 									nuc[str(n+1)] = broken[4].split(",")[n].replace("-","*")
 
+								# Uncomment for debugging
+								# print(broken[1])
+								# print(nuc)
+								# print([i.split(":")[0] for i in broken[9:]])
+
 								# Translate genotypes into nucleotides and the obtain the IUPAC ambiguity
 								# for heterozygous SNPs, and append to DNA sequence of each sample
-								site_tmp = ''.join([amb[''.join(sorted(set([nuc[broken[i][j]] for j in gt_idx])))] for i in range(9, index_last_sample)])
+								try:
+									site_tmp = ''.join([amb[''.join(sorted(set([nuc[broken[i][j]] for j in gt_idx])))] for i in range(9, index_last_sample)])
+								except KeyError:
+									print("Skipped potentially malformed line: " + line)
+									continue
 
 								# Write entire row of single nucleotide genotypes to temporary file
 								temporal.write(site_tmp+"\n")
 
-								# print nuc
-								# print [i.split(":")[0] for i in broken[9:]]
-								# print site_tmp
+								# Uncomment for debugging
+								# print(site_tmp)
 
 							# Write binary NEXUS for SNAPP if requested
 							if nexusbin:
