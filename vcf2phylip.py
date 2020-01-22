@@ -275,8 +275,6 @@ def main():
 						else:
 							# Keep track of loci rejected due to multinucleotide genotypes
 							snp_multinuc += 1
-							# Keep track of loci rejected due to exceeded missing data
-							snp_shallow += 1
 
 					else:
 						# Keep track of loci rejected due to exceeded missing data
