@@ -120,6 +120,7 @@ def main():
 
 		# Look for the line in the VCF header with the sample names
 		for line in vcf:
+			line = line.decode("UTF-8")
 			if line.startswith("#CHROM"):
 
 				# Split line into fields
@@ -204,6 +205,7 @@ def main():
 
 			# Now process the SNPs one by one
 			for line in vcf_chunk:
+				line = line.decode("UTF-8")
 				if not line.startswith("#") and line.strip("\n") != "": # pyrad sometimes produces an empty line after the #CHROM line
 
 					# Split line into columns
@@ -284,7 +286,7 @@ def main():
 		print("Total of genotypes processed: " + str(snp_num))
 		print("Genotypes excluded because they exceeded the amount of missing data allowed: " + str(snp_shallow))
 		print("Genotypes that passed missing data filter but were excluded for not being SNPs: " + str(snp_multinuc))
-		print("SNPs that passed the filters: " + str(snp_accepted)) 
+		print("SNPs that passed the filters: " + str(snp_accepted))
 		if nexusbin:
 			print("Biallelic SNPs selected for binary NEXUS: " + str(snp_biallelic))
 		print("")
