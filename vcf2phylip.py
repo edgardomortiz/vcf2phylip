@@ -363,7 +363,7 @@ def main():
 				output_nexbin.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
 				# Print current progress
-				print(("Outgroup, "+outgroup+", added to the binary matrix."))
+				print("Outgroup, "+outgroup+", added to the binary matrix.")
 
 
 	# Write sequences of the ingroup
