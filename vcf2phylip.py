@@ -156,8 +156,8 @@ def main():
 				
 	vcf.close()
 
-	print(("\nConverting file " + filename + ":\n"))
-	print(("Number of samples in VCF: " + str(len(sample_names))))
+	print("\nConverting file " + filename + ":\n")
+	print("Number of samples in VCF: " + str(len(sample_names)))
 
 
 	####################
@@ -178,7 +178,7 @@ def main():
 		if ploidy == 2:
 			temporalbin = open(outfile+".bin.tmp", "w")
 		else:
-			print(("Binary NEXUS not available for "+str(ploidy)+"-ploid VCF."))
+			print("Binary NEXUS not available for "+str(ploidy)+"-ploid VCF.")
 			nexusbin = False
 
 
@@ -219,7 +219,7 @@ def main():
 
 					# Print progress every 500000 lines
 					if snp_num % 500000 == 0:
-						print((str(snp_num)+" genotypes processed."))
+						print(str(snp_num)+" genotypes processed.")
 
 					# Check if the SNP has the minimum of samples required
 					if (len(broken[9:]) - broken[9:].count(missing)) >= min_samples_locus:
@@ -250,7 +250,7 @@ def main():
 								try:
 									site_tmp = ''.join([amb[''.join(sorted(set([nuc[broken[i][j]] for j in gt_idx])))] for i in range(9, index_last_sample)])
 								except KeyError:
-									print(("Skipped potentially malformed line: " + line))
+									print("Skipped potentially malformed line: " + line)
 									continue
 
 								# Write entire row of single nucleotide genotypes to temporary file
@@ -283,12 +283,12 @@ def main():
 						snp_shallow += 1
 
 		# Print useful information about filtering of SNPs
-		print(("Total of genotypes processed: " + str(snp_num)))
-		print(("Genotypes excluded because they exceeded the amount of missing data allowed: " + str(snp_shallow)))
-		print(("Genotypes that passed missing data filter but were excluded for not being SNPs: " + str(snp_multinuc)))
-		print(("SNPs that passed the filters: " + str(snp_accepted))) 
+		print("Total of genotypes processed: " + str(snp_num))
+		print("Genotypes excluded because they exceeded the amount of missing data allowed: " + str(snp_shallow))
+		print("Genotypes that passed missing data filter but were excluded for not being SNPs: " + str(snp_multinuc))
+		print("SNPs that passed the filters: " + str(snp_accepted))
 		if nexusbin:
-			print(("Biallelic SNPs selected for binary NEXUS: " + str(snp_biallelic)))
+			print("Biallelic SNPs selected for binary NEXUS: " + str(snp_biallelic))
 		print("")
 
 	vcf.close()
@@ -348,7 +348,7 @@ def main():
 					output_nex.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
 				# Print current progress
-				print(("Outgroup, "+outgroup+", added to the matrix(ces)."))
+				print("Outgroup, "+outgroup+", added to the matrix(ces).")
 
 		if nexusbin:
 			with open(outfile+".bin.tmp") as bin_tmp_seq:
@@ -389,7 +389,7 @@ def main():
 						output_nex.write(sample_names[s]+padding+seqout+"\n")
 
 					# Print current progress
-					print(("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the nucleotide matrix(ces)."))
+					print("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the nucleotide matrix(ces).")
 
 			if nexusbin:
 				with open(outfile+".bin.tmp") as bin_tmp_seq:
@@ -404,7 +404,7 @@ def main():
 					output_nexbin.write(sample_names[s]+padding+seqout+"\n")
 
 					# Print current progress
-					print(("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the binary matrix."))
+					print("Sample "+str(s+1)+" of "+str(len(sample_names))+", "+sample_names[s]+", added to the binary matrix.")
 
 
 	if not phylipdisable:
