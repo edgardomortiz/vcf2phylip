@@ -120,7 +120,6 @@ def main():
 
 		# Look for the line in the VCF header with the sample names
 		for line in vcf:
-			line = line.decode("UTF-8")
 			if line.startswith("#CHROM"):
 
 				# Split line into fields
