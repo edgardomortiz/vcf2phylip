@@ -18,7 +18,7 @@ Just type `python vcf2phylip.py -h` to show the help of the program:
 
 ```
 usage: vcf2phylip.py [-h] -i FILENAME [-m MIN_SAMPLES_LOCUS] [-o OUTGROUP]
-                     [-p] [-f] [-n] [-b]
+                     [-p] [-f] [-n] [-b] [-v]
 
 The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
@@ -43,6 +43,7 @@ optional arguments:
   -n, --nexus           Write a NEXUS matrix, disabled by default
   -b, --nexus-binary    Write a binary NEXUS matrix for analysis of biallelic
                         SNPs in SNAPP, disabled by default
+  -v, --version         show program's version number and exit
 ```
 
 ## _Examples_
