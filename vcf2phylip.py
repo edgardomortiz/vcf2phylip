@@ -16,7 +16,7 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.0"
+__version__     = "2.1"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2019-01-15"
 
@@ -45,6 +45,7 @@ def main():
 		help="Write a NEXUS matrix, disabled by default")
 	parser.add_argument("-b", "--nexus-binary", action="store_true", dest="nexusbin", default=False,
 		help="Write a binary NEXUS matrix for analysis of biallelic SNPs in SNAPP, disabled by default")
+	parser.add_argument("-v", "--version", action="version", version="%(prog)s {version}".format(version=__version__))
 	args = parser.parse_args()
 
 
