@@ -16,16 +16,17 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.1"
+__version__     = "2.2"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2019-01-15"
 
 
 
-import sys
-import os
 import argparse
 import gzip
+import os
+import random
+import sys
 
 
 
@@ -44,7 +45,9 @@ def main():
 	parser.add_argument("-n", "--nexus", action="store_true", dest="nexus", default=False,
 		help="Write a NEXUS matrix, disabled by default")
 	parser.add_argument("-b", "--nexus-binary", action="store_true", dest="nexusbin", default=False,
-		help="Write a binary NEXUS matrix for analysis of biallelic SNPs in SNAPP, disabled by default")
+		help="Write a binary NEXUS matrix for analysis of biallelic SNPs in SNAPP, disabled by default.")
+	parser.add_argument("-r", "--resolve-IUPAC", action="store_true", dest="resolve_IUPAC",
+		help="Randomly resolve heterozygous genotypes to avoid IUPAC ambiguities in the matrices.")
 	parser.add_argument("-v", "--version", action="version", version="%(prog)s {version}".format(version=__version__))
 	args = parser.parse_args()
 
@@ -64,6 +67,7 @@ def main():
 	fasta = args.fasta
 	nexus = args.nexus
 	nexusbin = args.nexusbin
+	resolve_IUPAC = args.resolve_IUPAC
 
 
 
@@ -212,6 +216,15 @@ def main():
 					for g in range(9,len(broken)):
 						if broken[g].split(":")[0][0] == ".":
 							broken[g] = missing
+
+					# Randomly resolve heterozygous genotypes to avoid IUPAC ambiguities in matrix
+					if resolve_IUPAC:
+						for g in range(9, len(broken)):
+							picked = random.choice([broken[g][i] for i in gt_idx])
+							g_list = list(broken[g])
+							for i in gt_idx:
+								g_list[i] = picked
+							broken[g] = "".join(g_list)
 
 					# Keep track of number of genotypes processed
 					snp_num += 1

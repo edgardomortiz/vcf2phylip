@@ -18,7 +18,7 @@ Just type `python vcf2phylip.py -h` to show the help of the program:
 
 ```
 usage: vcf2phylip.py [-h] -i FILENAME [-m MIN_SAMPLES_LOCUS] [-o OUTGROUP]
-                     [-p] [-f] [-n] [-b] [-v]
+                     [-p] [-f] [-n] [-b] [-r] [-v]
 
 The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
@@ -42,7 +42,9 @@ optional arguments:
   -f, --fasta           Write a FASTA matrix, disabled by default
   -n, --nexus           Write a NEXUS matrix, disabled by default
   -b, --nexus-binary    Write a binary NEXUS matrix for analysis of biallelic
-                        SNPs in SNAPP, disabled by default
+                        SNPs in SNAPP, disabled by default.
+  -r, --resolve-IUPAC   Randomly resolve heterozygous genotypes to avoid IUPAC
+                        ambiguities in the matrices.
   -v, --version         show program's version number and exit
 ```
 
@@ -80,6 +82,15 @@ python vcf2phylip.py --input myfile.vcf --phylip-disable --nexus
 python vcf2phylip.py -i myfile.vcf -p -n
 # This command will create only a NEXUS matrix called myfile_min4.nexus
 ```
+
+_Example 5:_ If for some reason you don't want to have IUPAC ambiguities representing heterozygous genotypes:
+```bash
+python vcf2phylip.py --input myfile.vcf --resolve-IUPAC
+# Which is equivalent to:
+python vcf2phylip.py -i myfile.vcf -r
+# This command will create only a PHYLIP matrix called myfile_min4.phy where IUPAC ambiguites have been randomly resolved
+```
+
 
 ## _Credits_
 - Code: [Edgardo M. Ortiz](mailto:e.ortiz.v@gmail.com)
