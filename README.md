@@ -44,7 +44,7 @@ optional arguments:
   -b, --nexus-binary    Write a binary NEXUS matrix for analysis of biallelic
                         SNPs in SNAPP, disabled by default.
   -r, --resolve-IUPAC   Randomly resolve heterozygous genotypes to avoid IUPAC
-                        ambiguities in the matrices.
+                        ambiguities in the matrices
   -v, --version         show program's version number and exit
 ```
 
