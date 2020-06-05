@@ -16,7 +16,7 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.2"
+__version__     = "2.3"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2019-01-15"
 
@@ -115,7 +115,7 @@ def main():
     gt_idx = []
     missing = ""
 
-    with opener(filename) as vcf:
+    with opener(filename, "rt") as vcf:
 
         # Create a list to store sample names
         sample_names = []
@@ -192,7 +192,7 @@ def main():
     index_last_sample = len(sample_names)+9
 
     # Start processing SNPs of VCF file
-    with opener(filename) as vcf:
+    with opener(filename, "rt") as vcf:
 
         # Initialize line counter
         snp_num = 0
