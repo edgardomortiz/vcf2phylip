@@ -160,6 +160,10 @@ def main():
                 
     vcf.close()
 
+    if len(sample_names) == 0:
+        print("\nSample names not found in VCF, your file may be corrupt or missing the header.\n")
+        sys.exit()
+
     print("\nConverting file " + filename + ":\n")
     print("Number of samples in VCF: " + str(len(sample_names)))
 
