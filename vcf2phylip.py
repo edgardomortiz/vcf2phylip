@@ -62,7 +62,7 @@ def main():
         opener = open
 
     min_samples_locus = args.min_samples_locus
-    outgroup = args.outgroup.split(",").split(";")[0]
+    outgroup = args.outgroup.split(",")[0].split(";")[0]
     phylipdisable = args.phylipdisable
     fasta = args.fasta
     nexus = args.nexus
