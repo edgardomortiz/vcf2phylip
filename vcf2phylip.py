@@ -63,7 +63,7 @@ gen_bin = {"./.":"?",
 
 def extract_sample_names(vcf_file):
     """
-    Extract sample names and most likely ploidy level for a VCF
+    Extract sample names from VCF file
     """
     if vcf_file.endswith(".gz"):
         opener = gzip.open
@@ -90,8 +90,8 @@ def is_anomalous(record, num_samples):
 
 def is_snp(record):
     """
-    Determine if current VCF record is a MNP (multinucleotide polymorphism) as opposed to SNP 
-    (single nucleotide polymorphism)
+    Determine if current VCF record is a SNP (single nucleotide polymorphism) as opposed to MNP 
+    (multinucleotide polymorphism)
     """
     return bool(len(record[3]) == 1 
                 and len(record[4]) - record[4].count(",") == record[4].count(",") + 1)
@@ -215,7 +215,6 @@ def main():
         outfile = filename.replace(".vcf.gz",".min"+str(min_samples_locus))
     else:
         outfile = filename.replace(".vcf",".min"+str(min_samples_locus))
-
     # We need to create an intermediate file to hold the sequence data vertically and then transpose 
     # it to create the matrices
     if fasta or nexus or not phylipdisable:
@@ -223,6 +222,7 @@ def main():
     # If binary NEXUS is selected also create a separate temporal
     if nexusbin:
         temporalbin = open(outfile+".bin.tmp", "w")
+
 
     ##########################
     # PROCESS GENOTYPES IN VCF
@@ -245,7 +245,6 @@ def main():
             if not vcf_chunk:
                 break
 
-            # Now process the SNPs one by one
             for line in vcf_chunk:
                 line = line.strip()
 
@@ -257,7 +256,6 @@ def main():
                     # Print progress every 500000 lines
                     if snp_num % 500000 == 0:
                         print("{:d} genotypes processed.".format(snp_num))
-                    # Skip potentially malformed lines
                     if is_anomalous(record, num_samples):
                         print("Skipped potentially malformed line: {}".format(line))
                         continue
@@ -274,8 +272,7 @@ def main():
                                 snp_accepted += 1
                                 # If nucleotide matrices are requested
                                 if fasta or nexus or not phylipdisable:
-                                    # Create a dictionary for genotype to nucleotide translation
-                                    # each SNP may code the nucleotides in a different manner
+                                    # Transform VCF record into an alignment column
                                     site_tmp = get_matrix_column(record, num_samples, resolve_IUPAC)
                                     # Uncomment for debugging
                                     # print(site_tmp)
@@ -318,8 +315,7 @@ def main():
 
     if not phylipdisable:
         output_phy = open(outfile+".phy", "w")
-        header_phy = str(len(sample_names))+" "+str(snp_accepted)+"\n"
-        output_phy.write(header_phy)
+        output_phy.write("{:d} {:d}\n".format(len(sample_names), snp_accepted))
 
     if fasta:
         output_fas = open(outfile+".fasta", "w")
