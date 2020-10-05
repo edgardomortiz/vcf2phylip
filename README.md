@@ -3,7 +3,7 @@
 Convert SNPs in VCF format to PHYLIP, NEXUS, binary NEXUS, or FASTA alignments for phylogenetic analysis
 
 ## _Brief description_
-This script takes as input a VCF file and will use the SNP genotypes to create a matrix for phylogenetic analysis in the PHYLIP (relaxed version), FASTA, NEXUS, or binary NEXUS formats. For heterozygous SNPs the consensus is made and the IUPAC nucleotide ambiguity codes are written to the final matrix(ces), any ploidy level is allowed and automatically detected. The code is optimized for large VCF matrices (hundreds of samples and millions of genotypes), for example, in our tests it processed a 20GB VCF (~3 million SNPs x 650 individuals) in ~27 minutes. The initial version of the script just produced a PHYLIP matrix but now we have added other popular formats, including the binary NEXUS file to run SNPs analysis with the SNAPP plugin in BEAST (only for diploid samples).
+This script takes as input a VCF file and will use the SNP genotypes to create a matrix for phylogenetic analysis in the PHYLIP (relaxed version), FASTA, NEXUS, or binary NEXUS formats. For heterozygous SNPs the consensus is made and the IUPAC nucleotide ambiguity codes are written to the final matrix(ces), any ploidy level is allowed and automatically detected. The code is optimized for large VCF matrices (hundreds of samples and millions of genotypes), for example, in our tests it processed a 20GB VCF (~3 million SNPs x 650 individuals) in ~27 minutes. The initial version of the script just produced a PHYLIP matrix but now we have added other popular formats, including the binary NEXUS file to run SNPs analysis with the SNAPP plugin in BEAST (only for diploid genotypes).
 
 Additionally, you can choose a minimum number of samples per SNP to control the final amount of missing data. Since phylogenetic software usually root the trees at the first sequence in the alignment (e.g. RAxML, IQTREE, and MrBayes), the script also allows you to specify an OUTGROUP sequence that will be written in the first place in the alignment.
 
@@ -32,8 +32,8 @@ optional arguments:
   -i FILENAME, --input FILENAME
                         Name of the input VCF file, can be gzipped
   -m MIN_SAMPLES_LOCUS, --min-samples-locus MIN_SAMPLES_LOCUS
-                        Minimum of samples required to be present at a locus,
-                        default=4 since is the minimum for phylogenetics.
+                        Minimum of samples required to be present at a locus
+                        (default=4)
   -o OUTGROUP, --outgroup OUTGROUP
                         Name of the outgroup in the matrix. Sequence will be
                         written as first taxon in the alignment.
@@ -42,7 +42,8 @@ optional arguments:
   -f, --fasta           Write a FASTA matrix, disabled by default
   -n, --nexus           Write a NEXUS matrix, disabled by default
   -b, --nexus-binary    Write a binary NEXUS matrix for analysis of biallelic
-                        SNPs in SNAPP, disabled by default.
+                        SNPs in SNAPP, only diploid genotypes will be
+                        processed, disabled by default.
   -r, --resolve-IUPAC   Randomly resolve heterozygous genotypes to avoid IUPAC
                         ambiguities in the matrices
   -v, --version         show program's version number and exit
