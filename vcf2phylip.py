@@ -30,19 +30,18 @@ import sys
 # '*' is a deletion in GATK, deletions are ignored in consensus, lowercase consensus is udes when an
 # 'N' or '*' is part of the genotype. Capitalization is used by some software but ignored by Geneious
 # for example
-ambiguities = {"*":"-", "A":"A", "C":"C", "G":"G", "N":"N", "T":"T",
-               "*A":"a", "*C":"c", "*G":"g", "*N":"n", "*T":"t",
-               "AC":"M", "AG":"R", "AN":"a", "AT":"W", "CG":"S",
-               "CN":"c", "CT":"Y", "GN":"g", "GT":"K", "NT":"t",
-               "*AC":"m", "*AG":"r", "*AN":"a", "*AT":"w", "*CG":"s",
-               "*CN":"c", "*CT":"y", "*GN":"g", "*GT":"k", "*NT":"t",
-               "ACG":"V", "ACN":"m", "ACT":"H", "AGN":"r", "AGT":"D",
-               "ANT":"w", "CGN":"s", "CGT":"B", "CNT":"y", "GNT":"k",
-               "*ACG":"v", "*ACN":"m", "*ACT":"h", "*AGN":"r", "*AGT":"d",
-               "*ANT":"w", "*CGN":"s", "*CGT":"b", "*CNT":"y", "*GNT":"k",
-               "ACGN":"v", "ACGT":"N", "ACNT":"h", "AGNT":"d", "CGNT":"b",
-               "*ACGN":"v", "*ACGT":"N", "*ACNT":"h", "*AGNT":"d", "*CGNT":"b",
-               "*ACGNT":"N"}
+ambiguities = {"*"    :"-", "A"    :"A", "C"    :"C", "G"    :"G", "N"    :"N", "T"     :"T",
+               "*A"   :"a", "*C"   :"c", "*G"   :"g", "*N"   :"n", "*T"   :"t",
+               "AC"   :"M", "AG"   :"R", "AN"   :"a", "AT"   :"W", "CG"   :"S",
+               "CN"   :"c", "CT"   :"Y", "GN"   :"g", "GT"   :"K", "NT"   :"t",
+               "*AC"  :"m", "*AG"  :"r", "*AN"  :"a", "*AT"  :"w", "*CG"  :"s",
+               "*CN"  :"c", "*CT"  :"y", "*GN"  :"g", "*GT"  :"k", "*NT"  :"t",
+               "ACG"  :"V", "ACN"  :"m", "ACT"  :"H", "AGN"  :"r", "AGT"  :"D",
+               "ANT"  :"w", "CGN"  :"s", "CGT"  :"B", "CNT"  :"y", "GNT"  :"k",
+               "*ACG" :"v", "*ACN" :"m", "*ACT" :"h", "*AGN" :"r", "*AGT" :"d",
+               "*ANT" :"w", "*CGN" :"s", "*CGT" :"b", "*CNT" :"y", "*GNT" :"k",
+               "ACGN" :"v", "ACGT" :"N", "ACNT" :"h", "AGNT" :"d", "CGNT" :"b",
+               "*ACGN":"v", "*ACGT":"N", "*ACNT":"h", "*AGNT":"d", "*CGNT":"b", "*ACGNT":"N"}
 
 
 # Dictionary for translating biallelic SNPs into SNAPP, only for diploid VCF
