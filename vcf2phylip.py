@@ -226,6 +226,7 @@ def main():
 
     ##########################
     # PROCESS GENOTYPES IN VCF
+
     if filename.endswith(".gz"):
         opener = gzip.open
     else:
