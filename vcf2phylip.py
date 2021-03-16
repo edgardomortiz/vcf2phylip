@@ -14,9 +14,9 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.4"
+__version__     = "2.5"
 __email__       = "e.ortiz.v@gmail.com"
-__date__        = "2020-10-04"
+__date__        = "2021-03-16"
 
 
 import argparse
@@ -111,24 +111,28 @@ def get_matrix_column(record, num_samples, resolve_IUPAC):
     """
     Transform a VCF record into a phylogenetic matrix column with nucleotides instead of numbers
     """
-    nt_dict = {str(0): record[3].replace("-","*"), ".": "N"}
+    nt_dict = {str(0): record[3].replace("-","*").upper(), ".": "N"}
     alt = record[4].replace("-", "*")
     alt = alt.split(",")
     for n in range(len(alt)):
         nt_dict[str(n+1)] = alt[n]
     column = ""
     for i in range(9, num_samples + 9):
-        genotype = record[i].split(":")[0].replace("/", "").replace("|", "")
-        if resolve_IUPAC:
-            column += nt_dict[random.choice(genotype)]
+        geno_num = record[i].split(":")[0].replace("/", "").replace("|", "")
+        geno_nuc = "".join(sorted(set([nt_dict[j] for j in geno_num])))
+        if len(geno_nuc) == 1:
+            column += geno_nuc
+        elif resolve_IUPAC is False:
+            column += ambiguities[geno_nuc]
         else:
-            column += ambiguities["".join(sorted(set([nt_dict[j] for j in genotype])))]
+            column += nt_dict[random.choice(geno_num)]
     return column
 
 
 def get_matrix_column_bin(record, num_samples):
     """
-    If VCF is diploid, return an alignment column in NEXUS binary from a VCF record
+    Return an alignment column in NEXUS binary from a VCF record, if genotype is not diploid with at 
+    most two alleles it will return '?' as state
     """
     column = ""
     for i in range(9, num_samples + 9):
@@ -200,11 +204,11 @@ def main():
     # Get samples names and number of samples in VCF
     sample_names = extract_sample_names(filename)
     num_samples = len(sample_names)
-    if len(sample_names) == 0:
+    if num_samples == 0:
         print("\nSample names not found in VCF, your file may be corrupt or missing the header.\n")
         sys.exit()
     print("\nConverting file '{}':\n".format(filename))
-    print("Number of samples in VCF: {:d}".format(len(sample_names)))
+    print("Number of samples in VCF: {:d}".format(num_samples))
 
     # If the 'min_samples_locus' is larger than the actual number of samples in VCF readjust it
     min_samples_locus = min(num_samples, min_samples_locus)
