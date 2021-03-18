@@ -1,5 +1,5 @@
 # vcf2phylip
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)  
 Convert SNPs in VCF format to PHYLIP, NEXUS, binary NEXUS, or FASTA alignments for phylogenetic analysis
 
 ## _Brief description_
