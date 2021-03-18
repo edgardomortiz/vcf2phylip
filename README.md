@@ -103,6 +103,7 @@ _Example 6:_ Specify output folder and output prefix:
 ```bash
 python vcf2phylip.py -i myfile.vcf.gz --output-folder /data/results --output-prefix mymatrix
 # This command will create the file `matrix.min4.phy` in the folder `/data/results`
+```
 
 ## _Credits_
 - Code: [Edgardo M. Ortiz](mailto:e.ortiz.v@gmail.com)
