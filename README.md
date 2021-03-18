@@ -1,5 +1,5 @@
 # vcf2phylip
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)  
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)
 Convert SNPs in VCF format to PHYLIP, NEXUS, binary NEXUS, or FASTA alignments for phylogenetic analysis
 
 ## _Brief description_
@@ -17,8 +17,9 @@ Please don't hesitate to open an [`Issue`](https://github.com/edgardomortiz/vcf2
 Just type `python vcf2phylip.py -h` to show the help of the program:
 
 ```
-usage: vcf2phylip.py [-h] -i FILENAME [-m MIN_SAMPLES_LOCUS] [-o OUTGROUP]
-                     [-p] [-f] [-n] [-b] [-r] [-v]
+usage: vcf2phylip.py [-h] -i FILENAME [--output-folder FOLDER]
+                     [--output-prefix PREFIX] [-m MIN_SAMPLES_LOCUS]
+                     [-o OUTGROUP] [-p] [-f] [-n] [-b] [-r] [-v]
 
 The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
@@ -31,6 +32,12 @@ optional arguments:
   -h, --help            show this help message and exit
   -i FILENAME, --input FILENAME
                         Name of the input VCF file, can be gzipped
+  --output-folder FOLDER
+                        Output folder name, it will be created if it does not
+                        exist (same folder as input by default)
+  --output-prefix PREFIX
+                        Prefix for output filenames (same as the input VCF
+                        filename without the extension by default)
   -m MIN_SAMPLES_LOCUS, --min-samples-locus MIN_SAMPLES_LOCUS
                         Minimum of samples required to be present at a locus
                         (default=4)
@@ -39,13 +46,13 @@ optional arguments:
                         written as first taxon in the alignment.
   -p, --phylip-disable  A PHYLIP matrix is written by default unless you
                         enable this flag
-  -f, --fasta           Write a FASTA matrix, disabled by default
-  -n, --nexus           Write a NEXUS matrix, disabled by default
+  -f, --fasta           Write a FASTA matrix (disabled by default)
+  -n, --nexus           Write a NEXUS matrix (disabled by default)
   -b, --nexus-binary    Write a binary NEXUS matrix for analysis of biallelic
                         SNPs in SNAPP, only diploid genotypes will be
-                        processed, disabled by default.
+                        processed (disabled by default)
   -r, --resolve-IUPAC   Randomly resolve heterozygous genotypes to avoid IUPAC
-                        ambiguities in the matrices
+                        ambiguities in the matrices (disabled by default)
   -v, --version         show program's version number and exit
 ```
 
@@ -92,12 +99,16 @@ python vcf2phylip.py -i myfile.vcf -r
 # This command will create only a PHYLIP matrix called myfile_min4.phy where IUPAC ambiguites have been randomly resolved
 ```
 
+_Example 6:_ Specify output folder and output prefix:
+```bash
+python vcf2phylip.py -i myfile.vcf.gz --output-folder /data/results --output-prefix mymatrix
+# This command will create the file `matrix.min4.phy` in the folder `/data/results`
 
 ## _Credits_
 - Code: [Edgardo M. Ortiz](mailto:e.ortiz.v@gmail.com)
 - Data and testing: [Juan D. Palacio-Mejía](mailto:jdpalacio@gmail.com)
 
 ## _Citation_
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)  
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2540861.svg)](https://doi.org/10.5281/zenodo.2540861)
 **Ortiz, E.M. 2019.** vcf2phylip v2.0: convert a VCF matrix into several matrix formats for phylogenetic analysis. DOI:10.5281/zenodo.2540861
 

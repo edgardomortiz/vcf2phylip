@@ -3,7 +3,7 @@
 
 
 """
-The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA, 
+The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
 to process VCF files with sizes >1GB. For small VCF files the algorithm slows
 down as the number of taxa increases (but is still fast).
@@ -14,16 +14,16 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.5"
+__version__     = "2.6"
 __email__       = "e.ortiz.v@gmail.com"
-__date__        = "2021-03-16"
+__date__        = "2021-03-18"
 
 
 import argparse
 import gzip
-import os
 import random
 import sys
+from pathlib import Path
 
 
 # Dictionary of IUPAC ambiguities for nucleotides
@@ -64,7 +64,7 @@ def extract_sample_names(vcf_file):
     """
     Extract sample names from VCF file
     """
-    if vcf_file.endswith(".gz"):
+    if vcf_file.lower().endswith(".gz"):
         opener = gzip.open
     else:
         opener = open
@@ -89,11 +89,13 @@ def is_anomalous(record, num_samples):
 
 def is_snp(record):
     """
-    Determine if current VCF record is a SNP (single nucleotide polymorphism) as opposed to MNP 
+    Determine if current VCF record is a SNP (single nucleotide polymorphism) as opposed to MNP
     (multinucleotide polymorphism)
     """
-    return bool(len(record[3]) == 1 
-                and len(record[4]) - record[4].count(",") == record[4].count(",") + 1)
+    # <NON_REF> must be replaced by the REF in the ALT field for GVCFs from GATK
+    alt = record[4].replace("<NON_REF>", record[3])
+    return bool(len(record[3]) == 1
+                and len(alt) - alt.count(",") == alt.count(",") + 1)
 
 
 def num_genotypes(record, num_samples):
@@ -112,14 +114,18 @@ def get_matrix_column(record, num_samples, resolve_IUPAC):
     Transform a VCF record into a phylogenetic matrix column with nucleotides instead of numbers
     """
     nt_dict = {str(0): record[3].replace("-","*").upper(), ".": "N"}
-    alt = record[4].replace("-", "*")
+    # <NON_REF> must be replaced by the REF in the ALT field for GVCFs from GATK
+    alt = record[4].replace("-", "*").replace("<NON_REF>", nt_dict["0"])
     alt = alt.split(",")
     for n in range(len(alt)):
         nt_dict[str(n+1)] = alt[n]
     column = ""
     for i in range(9, num_samples + 9):
         geno_num = record[i].split(":")[0].replace("/", "").replace("|", "")
-        geno_nuc = "".join(sorted(set([nt_dict[j] for j in geno_num])))
+        try:
+            geno_nuc = "".join(sorted(set([nt_dict[j] for j in geno_num])))
+        except KeyError:
+            return "malformed"
         if len(geno_nuc) == 1:
             column += geno_nuc
         elif resolve_IUPAC is False:
@@ -131,13 +137,13 @@ def get_matrix_column(record, num_samples, resolve_IUPAC):
 
 def get_matrix_column_bin(record, num_samples):
     """
-    Return an alignment column in NEXUS binary from a VCF record, if genotype is not diploid with at 
+    Return an alignment column in NEXUS binary from a VCF record, if genotype is not diploid with at
     most two alleles it will return '?' as state
     """
     column = ""
     for i in range(9, num_samples + 9):
         genotype = record[i].split(":")[0]
-        if len(genotype) == 3:
+        if genotype in gen_bin:
             column += gen_bin[genotype]
         else:
             column += "?"
@@ -145,13 +151,24 @@ def get_matrix_column_bin(record, num_samples):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__, 
+    parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-i", "--input",
         action = "store",
         dest = "filename",
         required = True,
         help = "Name of the input VCF file, can be gzipped")
+    parser.add_argument("--output-folder",
+        action = "store",
+        dest = "folder",
+        default = "./",
+        help = "Output folder name, it will be created if it does not exist (same folder as input by "
+               "default)")
+    parser.add_argument("--output-prefix",
+        action = "store",
+        dest = "prefix",
+        help = "Prefix for output filenames (same as the input VCF filename without the extension by "
+               "default)")
     parser.add_argument("-m", "--min-samples-locus",
         action = "store",
         dest = "min_samples_locus",
@@ -171,20 +188,21 @@ def main():
     parser.add_argument("-f", "--fasta",
         action = "store_true",
         dest = "fasta",
-        help = "Write a FASTA matrix, disabled by default")
+        help = "Write a FASTA matrix (disabled by default)")
     parser.add_argument("-n", "--nexus",
         action = "store_true",
         dest = "nexus",
-        help = "Write a NEXUS matrix, disabled by default")
+        help = "Write a NEXUS matrix (disabled by default)")
     parser.add_argument("-b", "--nexus-binary",
         action = "store_true",
         dest = "nexusbin",
         help = "Write a binary NEXUS matrix for analysis of biallelic SNPs in SNAPP, only diploid "
-               "genotypes will be processed, disabled by default.")
+               "genotypes will be processed (disabled by default)")
     parser.add_argument("-r", "--resolve-IUPAC",
         action = "store_true",
         dest = "resolve_IUPAC",
-        help = "Randomly resolve heterozygous genotypes to avoid IUPAC ambiguities in the matrices")
+        help = "Randomly resolve heterozygous genotypes to avoid IUPAC ambiguities in the matrices "
+               "(disabled by default)")
     parser.add_argument("-v", "--version",
         action = "version",
         version = "%(prog)s {version}".format(version=__version__))
@@ -192,6 +210,8 @@ def main():
 
 
     filename = args.filename
+    folder = args.folder
+    prefix = args.prefix
     min_samples_locus = args.min_samples_locus
     outgroup = args.outgroup.split(",")[0].split(";")[0]
     phylipdisable = args.phylipdisable
@@ -202,7 +222,11 @@ def main():
 
 
     # Get samples names and number of samples in VCF
-    sample_names = extract_sample_names(filename)
+    if Path(filename).exists():
+        sample_names = extract_sample_names(filename)
+    else:
+        print("\nInput VCF file not found, please verify the provided path")
+        sys.exit()
     num_samples = len(sample_names)
     if num_samples == 0:
         print("\nSample names not found in VCF, your file may be corrupt or missing the header.\n")
@@ -214,14 +238,28 @@ def main():
     min_samples_locus = min(num_samples, min_samples_locus)
 
     # Output filename will be the same as input file, indicating the minimum of samples specified
-    if filename.endswith(".gz"):
-        outfile = filename.replace(".vcf.gz",".min"+str(min_samples_locus))
-    else:
-        outfile = filename.replace(".vcf",".min"+str(min_samples_locus))
-    # We need to create an intermediate file to hold the sequence data vertically and then transpose 
+    if not prefix:
+        parts = Path(filename).name.split(".")
+        prefix = []
+        for p in parts:
+            if p.lower() == "vcf":
+                break
+            else:
+                prefix.append(p)
+        prefix = ".".join(prefix)
+    prefix += ".min" + str(min_samples_locus)
+
+    # Check if outfolder exists, create it if it doesn't
+    if not Path(folder).exists():
+        Path(folder).mkdir(parents=True)
+
+    outfile = str(Path(folder, prefix))
+
+    # We need to create an intermediate file to hold the sequence data vertically and then transpose
     # it to create the matrices
     if fasta or nexus or not phylipdisable:
         temporal = open(outfile+".tmp", "w")
+
     # If binary NEXUS is selected also create a separate temporal
     if nexusbin:
         temporalbin = open(outfile+".bin.tmp", "w")
@@ -230,7 +268,7 @@ def main():
     ##########################
     # PROCESS GENOTYPES IN VCF
 
-    if filename.endswith(".gz"):
+    if filename.lower().endswith(".gz"):
         opener = gzip.open
     else:
         opener = open
@@ -261,7 +299,7 @@ def main():
                     if snp_num % 500000 == 0:
                         print("{:d} genotypes processed.".format(snp_num))
                     if is_anomalous(record, num_samples):
-                        print("Skipped potentially malformed line: {}".format(line))
+                        print("Skipping malformed line:\n{}".format(line))
                         continue
                     else:
                         # Check if the SNP has the minimum number of samples required
@@ -276,19 +314,25 @@ def main():
                                 snp_accepted += 1
                                 # If nucleotide matrices are requested
                                 if fasta or nexus or not phylipdisable:
+                                    # Uncomment for debugging
+                                    # print(record)
                                     # Transform VCF record into an alignment column
                                     site_tmp = get_matrix_column(record, num_samples, resolve_IUPAC)
                                     # Uncomment for debugging
                                     # print(site_tmp)
                                     # Write entire row of single nucleotide genotypes to temp file
-                                    temporal.write(site_tmp+"\n")
+                                    if site_tmp == "malformed":
+                                        print("Skipping malformed line:\n{}".format(line))
+                                        continue
+                                    else:
+                                        temporal.write(site_tmp+"\n")
                                 # Write binary NEXUS for SNAPP if requested
                                 if nexusbin:
                                     # Check that the SNP only has two alleles
                                     if len(record[4]) == 1:
                                         # Add to running sum of biallelic SNPs
                                         snp_biallelic += 1
-                                        # Translate genotype into 0 for homozygous REF, 1 for 
+                                        # Translate genotype into 0 for homozygous REF, 1 for
                                         # heterozygous, and 2 for homozygous ALT
                                         binsite_tmp = get_matrix_column_bin(record, num_samples)
                                         # Write entire row to temporary file
@@ -426,21 +470,26 @@ def main():
                     print("Sample {:d} of {:d}, '{}', added to the binary matrix.".format(
                                                            s+1, len(sample_names), sample_names[s]))
 
+    print()
     if not phylipdisable:
+        print("PHYLIP matrix saved to: " + outfile+".phy")
         output_phy.close()
     if fasta:
+        print("FASTA matrix saved to: " + outfile+".fasta")
         output_fas.close()
     if nexus:
         output_nex.write(";\nEND;\n")
+        print("NEXUS matrix saved to: " + outfile+".nex")
         output_nex.close()
     if nexusbin:
         output_nexbin.write(";\nEND;\n")
+        print("BINARY NEXUS matrix saved to: " + outfile+".bin.nex")
         output_nexbin.close()
 
     if fasta or nexus or not phylipdisable:
-        os.remove(outfile+".tmp")
+        Path(outfile+".tmp").unlink()
     if nexusbin:
-        os.remove(outfile+".bin.tmp")
+        Path(outfile+".bin.tmp").unlink()
 
     print( "\nDone!\n")
 
