@@ -14,9 +14,9 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.6"
+__version__     = "2.7"
 __email__       = "e.ortiz.v@gmail.com"
-__date__        = "2021-03-18"
+__date__        = "2021-08-10"
 
 
 import argparse
@@ -203,6 +203,11 @@ def main():
         dest = "resolve_IUPAC",
         help = "Randomly resolve heterozygous genotypes to avoid IUPAC ambiguities in the matrices "
                "(disabled by default)")
+    parser.add_argument("-w", "--write-used-sites",
+        action = "store_true",
+        dest = "write_used",
+        help = "Save the list of coordinates that passed the filters and were used in the alignments "
+               "(disabled by default)")
     parser.add_argument("-v", "--version",
         action = "version",
         version = "%(prog)s {version}".format(version=__version__))
@@ -219,6 +224,7 @@ def main():
     nexus = args.nexus
     nexusbin = args.nexusbin
     resolve_IUPAC = args.resolve_IUPAC
+    write_used = args.write_used
 
 
     # Get samples names and number of samples in VCF
@@ -268,6 +274,10 @@ def main():
     ##########################
     # PROCESS GENOTYPES IN VCF
 
+    if write_used:
+        used_sites = open(outfile+".used_sites.tsv", "w")
+        used_sites.write("#CHROM\tPOS\tNUM_SAMPLES\n")
+
     if filename.lower().endswith(".gz"):
         opener = gzip.open
     else:
@@ -303,7 +313,8 @@ def main():
                         continue
                     else:
                         # Check if the SNP has the minimum number of samples required
-                        if num_genotypes(record, num_samples) < min_samples_locus:
+                        num_samples_locus = num_genotypes(record, num_samples)
+                        if  num_samples_locus < min_samples_locus:
                             # Keep track of loci rejected due to exceeded missing data
                             snp_shallow += 1
                             continue
@@ -326,6 +337,7 @@ def main():
                                         continue
                                     else:
                                         temporal.write(site_tmp+"\n")
+                                        used_sites.write(record[0] + "\t" + record[1] + "\t" + str(num_samples_locus) + "\n")
                                 # Write binary NEXUS for SNAPP if requested
                                 if nexusbin:
                                     # Check that the SNP only has two alleles
@@ -350,7 +362,11 @@ def main():
         print("SNPs that passed the filters: {:d}".format(snp_accepted))
         if nexusbin:
             print("Biallelic SNPs selected for binary NEXUS: {:d}".format(snp_biallelic))
-        print("")
+
+    if write_used:
+        print("Used sites saved to: '" + outfile + ".used_sites.tsv'")
+        used_sites.close()
+    print("")
 
     if fasta or nexus or not phylipdisable:
         temporal.close()

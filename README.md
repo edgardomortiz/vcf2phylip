@@ -19,7 +19,7 @@ Just type `python vcf2phylip.py -h` to show the help of the program:
 ```
 usage: vcf2phylip.py [-h] -i FILENAME [--output-folder FOLDER]
                      [--output-prefix PREFIX] [-m MIN_SAMPLES_LOCUS]
-                     [-o OUTGROUP] [-p] [-f] [-n] [-b] [-r] [-v]
+                     [-o OUTGROUP] [-p] [-f] [-n] [-b] [-r] [-w] [-v]
 
 The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
@@ -53,6 +53,9 @@ optional arguments:
                         processed (disabled by default)
   -r, --resolve-IUPAC   Randomly resolve heterozygous genotypes to avoid IUPAC
                         ambiguities in the matrices (disabled by default)
+  -w, --write-used-sites
+                        Save the list of coordinates that passed the filters
+                        and were used in the alignments (disabled by default)
   -v, --version         show program's version number and exit
 ```
 
@@ -102,7 +105,13 @@ python vcf2phylip.py -i myfile.vcf -r
 _Example 6:_ Specify output folder and output prefix:
 ```bash
 python vcf2phylip.py -i myfile.vcf.gz --output-folder /data/results --output-prefix mymatrix
-# This command will create the file `mymatrix.min4.phy` in the folder `/data/results`
+# This command will create the file `myfile.min4.phy` in the folder `/data/results`
+```
+
+_Example 7:_ Write a list of the sites that were used in the alignments:
+```bash
+python vcf2phylip.py -i myfile.vcf.gz -w
+# This command will create the file `myfile.min4.phy` and the list `myfile.min4.used_sites.tsv`
 ```
 
 ## _Credits_
