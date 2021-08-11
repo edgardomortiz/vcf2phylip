@@ -337,7 +337,8 @@ def main():
                                         continue
                                     else:
                                         temporal.write(site_tmp+"\n")
-                                        used_sites.write(record[0] + "\t" + record[1] + "\t" + str(num_samples_locus) + "\n")
+                                        if write_used:
+                                            used_sites.write(record[0] + "\t" + record[1] + "\t" + str(num_samples_locus) + "\n")
                                 # Write binary NEXUS for SNAPP if requested
                                 if nexusbin:
                                     # Check that the SNP only has two alleles
