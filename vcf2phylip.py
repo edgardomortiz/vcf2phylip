@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 """
 The script converts a collection of SNPs in VCF format into a PHYLIP, FASTA,
 NEXUS, or binary NEXUS file for phylogenetic analysis. The code is optimized
@@ -11,13 +10,11 @@ down as the number of taxa increases (but is still fast).
 Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 """
 
-
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.7"
+__version__     = "2.8"
 __email__       = "e.ortiz.v@gmail.com"
 __date__        = "2021-08-10"
-
 
 import argparse
 import gzip
@@ -25,39 +22,42 @@ import random
 import sys
 from pathlib import Path
 
-
 # Dictionary of IUPAC ambiguities for nucleotides
-# '*' is a deletion in GATK, deletions are ignored in consensus, lowercase consensus is udes when an
+# '*' is a deletion in GATK, deletions are ignored in consensus, lowercase consensus is used when an
 # 'N' or '*' is part of the genotype. Capitalization is used by some software but ignored by Geneious
 # for example
-ambiguities = {"*"    :"-", "A"    :"A", "C"    :"C", "G"    :"G", "N"    :"N", "T"     :"T",
-               "*A"   :"a", "*C"   :"c", "*G"   :"g", "*N"   :"n", "*T"   :"t",
-               "AC"   :"M", "AG"   :"R", "AN"   :"a", "AT"   :"W", "CG"   :"S",
-               "CN"   :"c", "CT"   :"Y", "GN"   :"g", "GT"   :"K", "NT"   :"t",
-               "*AC"  :"m", "*AG"  :"r", "*AN"  :"a", "*AT"  :"w", "*CG"  :"s",
-               "*CN"  :"c", "*CT"  :"y", "*GN"  :"g", "*GT"  :"k", "*NT"  :"t",
-               "ACG"  :"V", "ACN"  :"m", "ACT"  :"H", "AGN"  :"r", "AGT"  :"D",
-               "ANT"  :"w", "CGN"  :"s", "CGT"  :"B", "CNT"  :"y", "GNT"  :"k",
-               "*ACG" :"v", "*ACN" :"m", "*ACT" :"h", "*AGN" :"r", "*AGT" :"d",
-               "*ANT" :"w", "*CGN" :"s", "*CGT" :"b", "*CNT" :"y", "*GNT" :"k",
-               "ACGN" :"v", "ACGT" :"N", "ACNT" :"h", "AGNT" :"d", "CGNT" :"b",
-               "*ACGN":"v", "*ACGT":"N", "*ACNT":"h", "*AGNT":"d", "*CGNT":"b", "*ACGNT":"N"}
-
+AMBIG = {
+    "A"    :"A", "C"    :"C", "G"    :"G", "N"    :"N", "T"    :"T",
+    "*A"   :"a", "*C"   :"c", "*G"   :"g", "*N"   :"n", "*T"   :"t",
+    "AC"   :"M", "AG"   :"R", "AN"   :"a", "AT"   :"W", "CG"   :"S",
+    "CN"   :"c", "CT"   :"Y", "GN"   :"g", "GT"   :"K", "NT"   :"t",
+    "*AC"  :"m", "*AG"  :"r", "*AN"  :"a", "*AT"  :"w", "*CG"  :"s",
+    "*CN"  :"c", "*CT"  :"y", "*GN"  :"g", "*GT"  :"k", "*NT"  :"t",
+    "ACG"  :"V", "ACN"  :"m", "ACT"  :"H", "AGN"  :"r", "AGT"  :"D",
+    "ANT"  :"w", "CGN"  :"s", "CGT"  :"B", "CNT"  :"y", "GNT"  :"k",
+    "*ACG" :"v", "*ACN" :"m", "*ACT" :"h", "*AGN" :"r", "*AGT" :"d",
+    "*ANT" :"w", "*CGN" :"s", "*CGT" :"b", "*CNT" :"y", "*GNT" :"k",
+    "ACGN" :"v", "ACGT" :"N", "ACNT" :"h", "AGNT" :"d", "CGNT" :"b",
+    "*ACGN":"v", "*ACGT":"N", "*ACNT":"h", "*AGNT":"d", "*CGNT":"b",
+    "*"    :"-", "*ACGNT":"N",
+}
 
 # Dictionary for translating biallelic SNPs into SNAPP, only for diploid VCF
 # 0 is homozygous reference
 # 1 is heterozygous
 # 2 is homozygous alternative
-gen_bin = {"./.":"?",
-           ".|.":"?",
-           "0/0":"0",
-           "0|0":"0",
-           "0/1":"1",
-           "0|1":"1",
-           "1/0":"1",
-           "1|0":"1",
-           "1/1":"2",
-           "1|1":"2"}
+GEN_BIN = {
+    "./.":"?",
+    ".|.":"?",
+    "0/0":"0",
+    "0|0":"0",
+    "0/1":"1",
+    "0|1":"1",
+    "1/0":"1",
+    "1|0":"1",
+    "1/1":"2",
+    "1|1":"2",
+}
 
 
 def extract_sample_names(vcf_file):
@@ -94,8 +94,7 @@ def is_snp(record):
     """
     # <NON_REF> must be replaced by the REF in the ALT field for GVCFs from GATK
     alt = record[4].replace("<NON_REF>", record[3])
-    return bool(len(record[3]) == 1
-                and len(alt) - alt.count(",") == alt.count(",") + 1)
+    return bool(len(record[3]) == 1 and len(alt) - alt.count(",") == alt.count(",") + 1)
 
 
 def num_genotypes(record, num_samples):
@@ -126,12 +125,10 @@ def get_matrix_column(record, num_samples, resolve_IUPAC):
             geno_nuc = "".join(sorted(set([nt_dict[j] for j in geno_num])))
         except KeyError:
             return "malformed"
-        if len(geno_nuc) == 1:
-            column += geno_nuc
-        elif resolve_IUPAC is False:
-            column += ambiguities[geno_nuc]
+        if resolve_IUPAC is False:
+            column += AMBIG[geno_nuc]
         else:
-            column += nt_dict[random.choice(geno_num)]
+            column += AMBIG[nt_dict[random.choice(geno_num)]]
     return column
 
 
@@ -143,8 +140,8 @@ def get_matrix_column_bin(record, num_samples):
     column = ""
     for i in range(9, num_samples + 9):
         genotype = record[i].split(":")[0]
-        if genotype in gen_bin:
-            column += gen_bin[genotype]
+        if genotype in GEN_BIN:
+            column += GEN_BIN[genotype]
         else:
             column += "?"
     return column
@@ -213,23 +210,11 @@ def main():
         version = "%(prog)s {version}".format(version=__version__))
     args = parser.parse_args()
 
-
-    filename = args.filename
-    folder = args.folder
-    prefix = args.prefix
-    min_samples_locus = args.min_samples_locus
     outgroup = args.outgroup.split(",")[0].split(";")[0]
-    phylipdisable = args.phylipdisable
-    fasta = args.fasta
-    nexus = args.nexus
-    nexusbin = args.nexusbin
-    resolve_IUPAC = args.resolve_IUPAC
-    write_used = args.write_used
-
 
     # Get samples names and number of samples in VCF
-    if Path(filename).exists():
-        sample_names = extract_sample_names(filename)
+    if Path(args.filename).exists():
+        sample_names = extract_sample_names(args.filename)
     else:
         print("\nInput VCF file not found, please verify the provided path")
         sys.exit()
@@ -237,53 +222,53 @@ def main():
     if num_samples == 0:
         print("\nSample names not found in VCF, your file may be corrupt or missing the header.\n")
         sys.exit()
-    print("\nConverting file '{}':\n".format(filename))
+    print("\nConverting file '{}':\n".format(args.filename))
     print("Number of samples in VCF: {:d}".format(num_samples))
 
     # If the 'min_samples_locus' is larger than the actual number of samples in VCF readjust it
-    min_samples_locus = min(num_samples, min_samples_locus)
+    args.min_samples_locus = min(num_samples, args.min_samples_locus)
 
     # Output filename will be the same as input file, indicating the minimum of samples specified
-    if not prefix:
-        parts = Path(filename).name.split(".")
-        prefix = []
+    if not args.prefix:
+        parts = Path(args.filename).name.split(".")
+        args.prefix = []
         for p in parts:
             if p.lower() == "vcf":
                 break
             else:
-                prefix.append(p)
-        prefix = ".".join(prefix)
-    prefix += ".min" + str(min_samples_locus)
+                args.prefix.append(p)
+        args.prefix = ".".join(args.prefix)
+    args.prefix += ".min" + str(args.min_samples_locus)
 
     # Check if outfolder exists, create it if it doesn't
-    if not Path(folder).exists():
-        Path(folder).mkdir(parents=True)
+    if not Path(args.folder).exists():
+        Path(args.folder).mkdir(parents=True)
 
-    outfile = str(Path(folder, prefix))
+    outfile = str(Path(args.folder, args.prefix))
 
     # We need to create an intermediate file to hold the sequence data vertically and then transpose
     # it to create the matrices
-    if fasta or nexus or not phylipdisable:
+    if args.fasta or args.nexus or not args.phylipdisable:
         temporal = open(outfile+".tmp", "w")
 
     # If binary NEXUS is selected also create a separate temporal
-    if nexusbin:
+    if args.nexusbin:
         temporalbin = open(outfile+".bin.tmp", "w")
 
 
     ##########################
     # PROCESS GENOTYPES IN VCF
 
-    if write_used:
+    if args.write_used:
         used_sites = open(outfile+".used_sites.tsv", "w")
         used_sites.write("#CHROM\tPOS\tNUM_SAMPLES\n")
 
-    if filename.lower().endswith(".gz"):
+    if args.filename.lower().endswith(".gz"):
         opener = gzip.open
     else:
         opener = open
 
-    with opener(filename, "rt") as vcf:
+    with opener(args.filename, "rt") as vcf:
         # Initialize line counter
         snp_num = 0
         snp_accepted = 0
@@ -314,7 +299,7 @@ def main():
                     else:
                         # Check if the SNP has the minimum number of samples required
                         num_samples_locus = num_genotypes(record, num_samples)
-                        if  num_samples_locus < min_samples_locus:
+                        if  num_samples_locus < args.min_samples_locus:
                             # Keep track of loci rejected due to exceeded missing data
                             snp_shallow += 1
                             continue
@@ -324,11 +309,12 @@ def main():
                                 # Add to running sum of accepted SNPs
                                 snp_accepted += 1
                                 # If nucleotide matrices are requested
-                                if fasta or nexus or not phylipdisable:
+                                if args.fasta or args.nexus or not args.phylipdisable:
                                     # Uncomment for debugging
                                     # print(record)
                                     # Transform VCF record into an alignment column
-                                    site_tmp = get_matrix_column(record, num_samples, resolve_IUPAC)
+                                    site_tmp = get_matrix_column(record, num_samples,
+                                                                 args.resolve_IUPAC)
                                     # Uncomment for debugging
                                     # print(site_tmp)
                                     # Write entire row of single nucleotide genotypes to temp file
@@ -337,10 +323,12 @@ def main():
                                         continue
                                     else:
                                         temporal.write(site_tmp+"\n")
-                                        if write_used:
-                                            used_sites.write(record[0] + "\t" + record[1] + "\t" + str(num_samples_locus) + "\n")
+                                        if args.write_used:
+                                            used_sites.write(record[0] + "\t"
+                                                             + record[1] + "\t"
+                                                             + str(num_samples_locus) + "\n")
                                 # Write binary NEXUS for SNAPP if requested
-                                if nexusbin:
+                                if args.nexusbin:
                                     # Check that the SNP only has two alleles
                                     if len(record[4]) == 1:
                                         # Add to running sum of biallelic SNPs
@@ -361,37 +349,37 @@ def main():
         print("Genotypes that passed missing data filter but were "
               "excluded for being MNPs: {:d}".format(mnp_num))
         print("SNPs that passed the filters: {:d}".format(snp_accepted))
-        if nexusbin:
+        if args.nexusbin:
             print("Biallelic SNPs selected for binary NEXUS: {:d}".format(snp_biallelic))
 
-    if write_used:
+    if args.write_used:
         print("Used sites saved to: '" + outfile + ".used_sites.tsv'")
         used_sites.close()
     print("")
 
-    if fasta or nexus or not phylipdisable:
+    if args.fasta or args.nexus or not args.phylipdisable:
         temporal.close()
-    if nexusbin:
+    if args.nexusbin:
         temporalbin.close()
 
 
     #######################
     # WRITE OUTPUT MATRICES
 
-    if not phylipdisable:
+    if not args.phylipdisable:
         output_phy = open(outfile+".phy", "w")
         output_phy.write("{:d} {:d}\n".format(len(sample_names), snp_accepted))
 
-    if fasta:
+    if args.fasta:
         output_fas = open(outfile+".fasta", "w")
 
-    if nexus:
+    if args.nexus:
         output_nex = open(outfile+".nexus", "w")
         output_nex.write("#NEXUS\n\nBEGIN DATA;\n\tDIMENSIONS NTAX={:d} NCHAR={:d};\n\tFORMAT "
                          "DATATYPE=DNA MISSING=N GAP=- ;\nMATRIX\n".format(len(sample_names),
                                                                                       snp_accepted))
 
-    if nexusbin:
+    if args.nexusbin:
         output_nexbin = open(outfile+".bin.nexus", "w")
         output_nexbin.write("#NEXUS\n\nBEGIN DATA;\n\tDIMENSIONS NTAX={:d} NCHAR={:d};\n\tFORMAT "
                             "DATATYPE=SNP MISSING=? GAP=- ;\nMATRIX\n".format(len(sample_names),
@@ -408,7 +396,7 @@ def main():
     if outgroup in sample_names:
         idx_outgroup = sample_names.index(outgroup)
 
-        if fasta or nexus or not phylipdisable:
+        if args.fasta or args.nexus or not args.phylipdisable:
             with open(outfile+".tmp") as tmp_seq:
                 seqout = ""
 
@@ -417,20 +405,20 @@ def main():
                     seqout += line[idx_outgroup]
 
                 # Write FASTA line
-                if fasta:
+                if args.fasta:
                     output_fas.write(">"+sample_names[idx_outgroup]+"\n"+seqout+"\n")
 
                 # Pad sequences names and write PHYLIP or NEXUS lines
                 padding = (len_longest_name + 3 - len(sample_names[idx_outgroup])) * " "
-                if not phylipdisable:
+                if not args.phylipdisable:
                     output_phy.write(sample_names[idx_outgroup]+padding+seqout+"\n")
-                if nexus:
+                if args.nexus:
                     output_nex.write(sample_names[idx_outgroup]+padding+seqout+"\n")
 
                 # Print current progress
                 print("Outgroup, '{}', added to the matrix(ces).".format(outgroup))
 
-        if nexusbin:
+        if args.nexusbin:
             with open(outfile+".bin.tmp") as bin_tmp_seq:
                 seqout = ""
 
@@ -448,7 +436,7 @@ def main():
     # Write sequences of the ingroup
     for s in range(0, len(sample_names)):
         if s != idx_outgroup:
-            if fasta or nexus or not phylipdisable:
+            if args.fasta or args.nexus or not args.phylipdisable:
                 with open(outfile+".tmp") as tmp_seq:
                     seqout = ""
 
@@ -457,21 +445,21 @@ def main():
                         seqout += line[s]
 
                     # Write FASTA line
-                    if fasta:
+                    if args.fasta:
                         output_fas.write(">"+sample_names[s]+"\n"+seqout+"\n")
 
                     # Pad sequences names and write PHYLIP or NEXUS lines
                     padding = (len_longest_name + 3 - len(sample_names[s])) * " "
-                    if not phylipdisable:
+                    if not args.phylipdisable:
                         output_phy.write(sample_names[s]+padding+seqout+"\n")
-                    if nexus:
+                    if args.nexus:
                         output_nex.write(sample_names[s]+padding+seqout+"\n")
 
                     # Print current progress
                     print("Sample {:d} of {:d}, '{}', added to the nucleotide matrix(ces).".format(
                                                            s+1, len(sample_names), sample_names[s]))
 
-            if nexusbin:
+            if args.nexusbin:
                 with open(outfile+".bin.tmp") as bin_tmp_seq:
                     seqout = ""
 
@@ -488,24 +476,24 @@ def main():
                                                            s+1, len(sample_names), sample_names[s]))
 
     print()
-    if not phylipdisable:
+    if not args.phylipdisable:
         print("PHYLIP matrix saved to: " + outfile+".phy")
         output_phy.close()
-    if fasta:
+    if args.fasta:
         print("FASTA matrix saved to: " + outfile+".fasta")
         output_fas.close()
-    if nexus:
+    if args.nexus:
         output_nex.write(";\nEND;\n")
         print("NEXUS matrix saved to: " + outfile+".nex")
         output_nex.close()
-    if nexusbin:
+    if args.nexusbin:
         output_nexbin.write(";\nEND;\n")
         print("BINARY NEXUS matrix saved to: " + outfile+".bin.nex")
         output_nexbin.close()
 
-    if fasta or nexus or not phylipdisable:
+    if args.fasta or args.nexus or not args.phylipdisable:
         Path(outfile+".tmp").unlink()
-    if nexusbin:
+    if args.nexusbin:
         Path(outfile+".bin.tmp").unlink()
 
     print( "\nDone!\n")
