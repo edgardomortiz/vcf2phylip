@@ -12,9 +12,9 @@ Any ploidy is allowed, but binary NEXUS is produced only for diploid VCFs.
 
 __author__      = "Edgardo M. Ortiz"
 __credits__     = "Juan D. Palacio-Mejía"
-__version__     = "2.8"
+__version__     = "2.9"
 __email__       = "e.ortiz.v@gmail.com"
-__date__        = "2021-08-10"
+__date__        = "2023-07-07"
 
 import argparse
 import gzip
@@ -306,8 +306,6 @@ def main():
                         else:
                             # Check that neither REF nor ALT contain MNPs
                             if is_snp(record):
-                                # Add to running sum of accepted SNPs
-                                snp_accepted += 1
                                 # If nucleotide matrices are requested
                                 if args.fasta or args.nexus or not args.phylipdisable:
                                     # Uncomment for debugging
@@ -322,6 +320,8 @@ def main():
                                         print("Skipping malformed line:\n{}".format(line))
                                         continue
                                     else:
+                                        # Add to running sum of accepted SNPs
+                                        snp_accepted += 1
                                         temporal.write(site_tmp+"\n")
                                         if args.write_used:
                                             used_sites.write(record[0] + "\t"
